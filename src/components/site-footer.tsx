@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { fetchSupporters } from "@/lib/supporters-api";
+import type { SupporterRow } from "@/types/supporter";
+import { SupporterThanks } from "@/components/supporter-thanks";
 
 const navLinks = [
   { href: "/", label: "홈" },
@@ -8,16 +12,52 @@ const navLinks = [
   { href: "/donate", label: "후원" },
 ] as const;
 
-const specialThanks = [
-  "김범기",
-  "조서형",
-  "박나현",
-  "장서연",
-  "김종인",
-] as const;
+/** DB 미적용·오류 시 푸터만이라도 동일 명단 표시 */
+const FALLBACK_SUPPORTERS: SupporterRow[] = [
+  {
+    id: "fallback-1",
+    display_name: "김범기",
+    amount_krw: 0,
+    sort_order: 1,
+  },
+  {
+    id: "fallback-2",
+    display_name: "조서형",
+    amount_krw: 0,
+    sort_order: 2,
+  },
+  {
+    id: "fallback-3",
+    display_name: "박나현",
+    amount_krw: 10000,
+    sort_order: 3,
+  },
+  {
+    id: "fallback-4",
+    display_name: "장서연",
+    amount_krw: 5000,
+    sort_order: 4,
+  },
+  {
+    id: "fallback-5",
+    display_name: "김종인",
+    amount_krw: 5000,
+    sort_order: 5,
+  },
+];
 
-export function SiteFooter() {
+async function loadSupporters(): Promise<SupporterRow[]> {
+  try {
+    const supabase = await createServerSupabaseClient();
+    return await fetchSupporters(supabase);
+  } catch {
+    return FALLBACK_SUPPORTERS;
+  }
+}
+
+export async function SiteFooter() {
   const year = new Date().getFullYear();
+  const supporters = await loadSupporters();
 
   return (
     <footer className="mt-auto border-t border-amber-900/10 bg-amber-50/60 backdrop-blur-sm">
@@ -45,14 +85,7 @@ export function SiteFooter() {
           </nav>
         </div>
 
-        <div className="mt-8 border-t border-amber-900/10 pt-6">
-          <p className="text-xs font-medium tracking-wide text-amber-800/60">
-            Special Thanks to
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-amber-900/85">
-            {specialThanks.join(", ")}
-          </p>
-        </div>
+        <SupporterThanks supporters={supporters} />
 
         <p className="mt-6 border-t border-amber-900/10 pt-6 text-xs text-amber-800/55">
           © {year} BGU Archive. 김하늘 from BGU.
