@@ -306,11 +306,13 @@ export function AvatarAvataaarsPanel({ value, onChange }: AvProps) {
         label="머리 색"
         value={firstOr(o.hairColor, "724133")}
         onChange={(hex) => patch({ hairColor: [hex] })}
+        largePreview
       />
       <ColorRow
         label="피부 색"
         value={firstOr(o.skinColor, "fd9841")}
         onChange={(hex) => patch({ skinColor: [hex] })}
+        largePreview
       />
       <ColorRow
         label="옷 색"
@@ -325,11 +327,17 @@ function ColorRow({
   label,
   value,
   onChange,
+  largePreview = false,
 }: {
   label: string;
   value: string;
   onChange: (hex: string) => void;
+  /** 데스크톱에서 머리색·피부색 등 스와치를 크게 */
+  largePreview?: boolean;
 }) {
+  const swatchClass = largePreview
+    ? "h-10 w-14 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5 sm:h-16 sm:w-28 sm:rounded-lg lg:h-[4.75rem] lg:w-32"
+    : "h-10 w-14 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5";
   return (
     <label className="block text-sm">
       <span className="text-amber-900/80">{label}</span>
@@ -338,7 +346,7 @@ function ColorRow({
           type="color"
           value={hexToInput(value)}
           onChange={(e) => onChange(hex6FromInput(e.target.value))}
-          className="h-10 w-14 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5"
+          className={swatchClass}
           aria-label={label}
         />
         <input
@@ -592,11 +600,13 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
         label="피부(베이스)"
         value={firstOr(o.baseColor, "f9c9b6")}
         onChange={(hex) => patch({ baseColor: [hex] })}
+        largePreview
       />
       <ColorRow
         label="머리 색"
         value={firstOr(o.hairColor, "4a3728")}
         onChange={(hex) => patch({ hairColor: [hex] })}
+        largePreview
       />
       <ColorRow
         label="셔츠 색"
@@ -783,11 +793,13 @@ export function AvatarToonHeadPanel({ value, onChange }: ToonProps) {
         label="피부"
         value={firstOr(o.skinColor, "f5c9a8")}
         onChange={(hex) => patch({ skinColor: [hex] })}
+        largePreview
       />
       <ColorRow
         label="머리 색"
         value={firstOr(o.hairColor, "4a3728")}
         onChange={(hex) => patch({ hairColor: [hex] })}
+        largePreview
       />
       <ColorRow
         label="옷 색"
@@ -1123,11 +1135,13 @@ export function AvatarAdventurerPanel({ value, onChange }: AdvProps) {
         label="피부"
         value={firstOr(o.skinColor, "f5c9a8")}
         onChange={(hex) => patch({ skinColor: [hex] })}
+        largePreview
       />
       <ColorRow
         label="머리 색"
         value={firstOr(o.hairColor, "4a3728")}
         onChange={(hex) => patch({ hairColor: [hex] })}
+        largePreview
       />
     </div>
   );

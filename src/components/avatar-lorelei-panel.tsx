@@ -237,7 +237,7 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
             onChange={(e) =>
               patchOptions({ hairColor: [hex6FromInput(e.target.value)] })
             }
-            className="h-10 w-14 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5"
+            className="h-10 w-14 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5 sm:h-16 sm:w-28 sm:rounded-lg lg:h-[4.75rem] lg:w-32"
             aria-label="머리 색"
           />
           <input
@@ -261,7 +261,7 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
             onChange={(e) =>
               patchOptions({ skinColor: [hex6FromInput(e.target.value)] })
             }
-            className="h-10 w-14 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5"
+            className="h-10 w-14 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5 sm:h-16 sm:w-28 sm:rounded-lg lg:h-[4.75rem] lg:w-32"
             aria-label="피부 색"
           />
           <input
