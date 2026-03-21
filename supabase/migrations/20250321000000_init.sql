@@ -26,6 +26,7 @@ create table if not exists public.games (
   name text not null,
   difficulty int,
   genre text not null default '',
+  min_players int null,
   max_players_raw text,
   max_players_kind text not null
     check (max_players_kind in ('number', 'min_plus', 'unknown', 'text')),

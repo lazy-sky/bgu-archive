@@ -4,6 +4,13 @@
 
 **파일:** [`migrations/20250321000000_init.sql`](./migrations/20250321000000_init.sql)
 
+이후 컬럼 추가 마이그레이션도 순서대로 실행하세요. 특히 `games.min_players`는 [`20250321000003_min_players.sql`](./migrations/20250321000003_min_players.sql) 또는 통합 정리용 [`20250321000004_games_min_players_fix.sql`](./migrations/20250321000004_games_min_players_fix.sql)를 적용합니다.
+
+### `min_player` / `min_players` / schema cache 오류
+
+- DB 컬럼명은 **`min_players`**(복수)입니다. `Could not find the min_player column … schema cache` 는 보통 **PostgREST 캐시**가 예전 스키마를 보고 있거나, `min_players` 마이그레이션이 아직 반영되지 않은 경우입니다.
+- **SQL Editor**에서 [`20250321000004_games_min_players_fix.sql`](./migrations/20250321000004_games_min_players_fix.sql) 전체를 실행한 뒤, 몇 초 뒤에 앱을 새로고침해 보세요. (`NOTIFY pgrst, 'reload schema'` 포함)
+
 대시보드 **SQL Editor**에 통째로 붙여 실행합니다.
 
 ## 2. 엑셀 내용을 `games` 테이블에 넣기
