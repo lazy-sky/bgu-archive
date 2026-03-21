@@ -55,25 +55,7 @@ export async function SiteFooter() {
             © {year} BGU Archive. 김하늘 from BGU.
           </p>
           <p className="leading-relaxed text-amber-800/60">
-            회원 아바타는{" "}
-            <a
-              href="https://www.dicebear.com/"
-              className="text-amber-900/80 underline hover:text-amber-950"
-              target="_blank"
-              rel="noreferrer"
-            >
-              DiceBear
-            </a>{" "}
-            (MIT)로 생성하며, Lorelei·Avataaars·Micah·Toon Head·Thumbs·Adventurer
-            등 스타일을 사용할 수 있습니다.{" "}
-            <a
-              href="https://www.dicebear.com/licenses/"
-              className="text-amber-900/80 underline hover:text-amber-950"
-              target="_blank"
-              rel="noreferrer"
-            >
-              스타일별 라이선스
-            </a>
+            Avatart with BGU Archive(MIT License)
           </p>
         </div>
       </div>
