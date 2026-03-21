@@ -3,6 +3,7 @@
 import { useAuth } from "@/components/auth-provider";
 import { fetchGameById } from "@/lib/games-api";
 import { fetchProfile } from "@/lib/profile-api";
+import { parseMinPlayersInput } from "@/lib/parse-min-players";
 import { parseMaxPlayersInput } from "@/lib/parse-max-players";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -24,6 +25,7 @@ export function EditGameForm({ gameId }: Props) {
   const [name, setName] = useState("");
   const [difficulty, setDifficulty] = useState("1");
   const [genre, setGenre] = useState("");
+  const [minPlayers, setMinPlayers] = useState("");
   const [maxPlayers, setMaxPlayers] = useState("");
   const [beginner, setBeginner] = useState(true);
   const [notes, setNotes] = useState("");
@@ -55,6 +57,9 @@ export function EditGameForm({ gameId }: Props) {
     setName(game.name);
     setDifficulty(String(game.difficulty ?? 1));
     setGenre(game.genre);
+    setMinPlayers(
+      game.minPlayers != null ? String(game.minPlayers) : "",
+    );
     setMaxPlayers(maxPlayersFieldValue(game.maxPlayersRaw));
     setBeginner(game.beginnerFriendly);
     setNotes(game.notes);
@@ -65,6 +70,7 @@ export function EditGameForm({ gameId }: Props) {
     mutationFn: async () => {
       if (!supabase || !session) throw new Error("로그인 필요");
       const parsed = parseMaxPlayersInput(maxPlayers);
+      const minP = parseMinPlayersInput(minPlayers);
       const trimmedMax = maxPlayers.trim();
       const { error: err } = await supabase
         .from("games")
@@ -72,6 +78,7 @@ export function EditGameForm({ gameId }: Props) {
           name: name.trim(),
           difficulty: Number(difficulty),
           genre: genre.trim(),
+          min_players: minP,
           max_players_raw: trimmedMax || null,
           max_players_kind: parsed.maxPlayersKind,
           max_players_value: parsed.maxPlayersValue,
@@ -185,15 +192,27 @@ export function EditGameForm({ gameId }: Props) {
           />
         </label>
       </div>
-      <label className="block text-sm">
-        <span className="text-amber-900/70">최대 인원</span>
-        <input
-          value={maxPlayers}
-          onChange={(e) => setMaxPlayers(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
-          placeholder="예: 4, 11이상, --"
-        />
-      </label>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block text-sm">
+          <span className="text-amber-900/70">최소 인원</span>
+          <input
+            inputMode="numeric"
+            value={minPlayers}
+            onChange={(e) => setMinPlayers(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
+            placeholder="비워 두면 미기재"
+          />
+        </label>
+        <label className="block text-sm">
+          <span className="text-amber-900/70">최대 인원</span>
+          <input
+            value={maxPlayers}
+            onChange={(e) => setMaxPlayers(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
+            placeholder="예: 4, 11이상, --"
+          />
+        </label>
+      </div>
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"

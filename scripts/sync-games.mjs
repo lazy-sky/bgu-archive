@@ -38,6 +38,13 @@ const NON_KIM_MEMBERS = SEED_MEMBER_PROFILES.filter(
   (p) => p.email !== "kim.haneul@bgu.local",
 );
 
+function minPlayersFromJson(g) {
+  if (g.minPlayers == null || g.minPlayers === "") return null;
+  const n = Number(g.minPlayers);
+  if (!Number.isFinite(n) || n < 1) return null;
+  return Math.floor(n);
+}
+
 function mapJsonGame(g, addedBy) {
   const rawStr =
     g.maxPlayersRaw == null ? "" : String(g.maxPlayersRaw);
@@ -50,6 +57,7 @@ function mapJsonGame(g, addedBy) {
     name: g.name,
     difficulty: g.difficulty,
     genre: g.genre ?? "",
+    min_players: minPlayersFromJson(g),
     max_players_raw: rawStr || null,
     max_players_kind: g.maxPlayersKind,
     max_players_value: val,

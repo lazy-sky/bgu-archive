@@ -5,6 +5,7 @@ export type DbGameRow = {
   name: string;
   difficulty: number | null;
   genre: string;
+  min_players: number | null;
   max_players_raw: string | null;
   max_players_kind: MaxPlayersKind;
   max_players_value: string | null;
@@ -41,6 +42,7 @@ export function mapDbGameToGame(row: DbGameRow): Game {
     name: row.name,
     difficulty: row.difficulty,
     genre: row.genre,
+    minPlayers: row.min_players ?? null,
     maxPlayersRaw: row.max_players_raw,
     maxPlayersKind: row.max_players_kind,
     maxPlayers: parseMaxPlayersValue(row),

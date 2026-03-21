@@ -224,7 +224,7 @@ export function GamesClient() {
                   <span className="text-amber-800/80">· {g.genre}</span>
                 </div>
                 <div className="flex flex-wrap gap-x-3 gap-y-1 text-amber-800/85">
-                  <span>인원(최소) {formatMinPlayers()}</span>
+                  <span>인원(최소) {formatMinPlayers(g)}</span>
                   <span>인원(최대) {formatMaxPlayers(g)}</span>
                 </div>
                 <div>
@@ -265,7 +265,7 @@ export function GamesClient() {
       </ul>
 
       <div className="hidden overflow-x-auto rounded-xl border border-amber-900/10 bg-white/80 shadow-sm [touch-action:pan-x] md:block">
-        <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
+        <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-amber-900/10 bg-amber-100/50 text-amber-950">
               <th className="w-12 px-2 py-3 text-center font-medium tabular-nums text-amber-900/70">
@@ -315,7 +315,7 @@ export function GamesClient() {
                   </td>
                   <td className="px-3 py-2.5 text-amber-900/90">{g.genre}</td>
                   <td className="px-3 py-2.5 text-amber-800/80">
-                    {formatMinPlayers()}
+                    {formatMinPlayers(g)}
                   </td>
                   <td className="px-3 py-2.5 text-amber-800/80">
                     {formatMaxPlayers(g)}

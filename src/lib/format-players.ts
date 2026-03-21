@@ -1,7 +1,9 @@
 import type { Game } from "@/types/game";
 
-/** 엑셀에 최소 인원 컬럼이 없어 UI에서는 미기재로 둡니다. */
-export function formatMinPlayers(): string {
+export function formatMinPlayers(game: Game): string {
+  if (game.minPlayers != null && Number.isFinite(game.minPlayers)) {
+    return `최소 ${game.minPlayers}명`;
+  }
   return "—";
 }
 

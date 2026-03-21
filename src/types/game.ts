@@ -5,6 +5,8 @@ export type Game = {
   name: string;
   difficulty: number | null;
   genre: string;
+  /** 최소 인원(명). null이면 미기재 */
+  minPlayers: number | null;
   maxPlayersRaw: string | number | null;
   maxPlayersKind: MaxPlayersKind;
   maxPlayers: number | string | null;

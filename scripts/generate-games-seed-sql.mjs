@@ -45,6 +45,13 @@ function addedBySubquery(i) {
   return `(SELECT id FROM public.profiles WHERE display_name = ${sqlLiteral(name)} LIMIT 1)`;
 }
 
+function minPlayersFromJson(g) {
+  if (g.minPlayers == null || g.minPlayers === "") return null;
+  const n = Number(g.minPlayers);
+  if (!Number.isFinite(n) || n < 1) return null;
+  return Math.floor(n);
+}
+
 function mapRow(g, i) {
   const raw =
     g.maxPlayersRaw == null ? "NULL" : sqlLiteral(String(g.maxPlayersRaw));
@@ -53,7 +60,7 @@ function mapRow(g, i) {
       ? "NULL"
       : sqlLiteral(String(g.maxPlayers));
 
-  return `  (${sqlLiteral(g.name)}, ${sqlInt(g.difficulty)}, ${sqlTextNotEmpty(g.genre)}, ${raw}, ${sqlLiteral(g.maxPlayersKind)}, ${val}, ${g.beginnerFriendly ? "true" : "false"}, ${sqlTextNotEmpty(g.notes)}, ${sqlTextNotEmpty(g.extraNotes)}, ${addedBySubquery(i)})`;
+  return `  (${sqlLiteral(g.name)}, ${sqlInt(g.difficulty)}, ${sqlTextNotEmpty(g.genre)}, ${sqlInt(minPlayersFromJson(g))}, ${raw}, ${sqlLiteral(g.maxPlayersKind)}, ${val}, ${g.beginnerFriendly ? "true" : "false"}, ${sqlTextNotEmpty(g.notes)}, ${sqlTextNotEmpty(g.extraNotes)}, ${addedBySubquery(i)})`;
 }
 
 function main() {
@@ -79,6 +86,7 @@ INSERT INTO public.games (
   name,
   difficulty,
   genre,
+  min_players,
   max_players_raw,
   max_players_kind,
   max_players_value,
