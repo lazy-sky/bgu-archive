@@ -62,7 +62,7 @@ export default function DonatePage() {
           후원하기
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-amber-900/70">
-          BGU Archive가 안정적으로 운영될 수 있도록 도와주세요. 감사합니다.
+          사이트를 유지보수하는데 비용이 조금 듭니다. BGU Archive가 안정적으로 운영될 수 있도록 도와주세요. 감사합니다.
         </p>
 
         <p className="mt-6 rounded-2xl border border-amber-900/10 bg-amber-50/80 p-4 text-sm text-amber-900/80">
@@ -88,8 +88,7 @@ export default function DonatePage() {
         </div>
 
         <p className="mt-8 text-xs leading-relaxed text-amber-800/55">
-          후원은 서버·유지보수 비용에 활용되며, 언제든 자유롭게 결정하실 수
-          있습니다.
+          후원은 서버·유지보수 비용에 활용됩니다. 입금내역은 최대한 빠르게 확인하도록 하겠습니다.
           <span className="mt-2 block text-amber-800/45">
             ※ 제작자가 부자되도록 다들 협조 부탁드립니다.
           </span>

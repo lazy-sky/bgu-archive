@@ -1,7 +1,7 @@
 "use client";
 
 import { mergeAvatarConfig } from "@/lib/avatar-config";
-import { dicebearLoreleiSvg } from "@/lib/dicebear-avatar";
+import { dicebearSvg, dicebearSvgDataUrl } from "@/lib/dicebear-avatar";
 import type { AvatarConfig } from "@/types/avatar";
 
 type Props = {
@@ -19,16 +19,27 @@ export function MemberAvatar({
   className = "",
 }: Props) {
   const c = mergeAvatarConfig(config);
-  const seed = c.seed.trim() || seedFallback || "bgu-archive";
-  const svg = dicebearLoreleiSvg({ seed, size, options: c.options });
+  const svg = dicebearSvg(c, size, seedFallback);
+  const src = dicebearSvgDataUrl(svg);
 
   return (
     <div
-      role="img"
-      aria-hidden
-      className={`inline-block shrink-0 overflow-hidden rounded-full bg-amber-100/40 ring-1 ring-amber-900/15 ${className}`}
-      style={{ width: size, height: size }}
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
+      className={`relative shrink-0 overflow-hidden rounded-full bg-amber-100/40 ring-1 ring-amber-900/15 ${className}`}
+      style={{
+        width: size,
+        height: size,
+        minWidth: size,
+        minHeight: size,
+      }}
+    >
+      <img
+        src={src}
+        alt=""
+        width={size}
+        height={size}
+        className="block h-full w-full max-h-full max-w-full object-contain object-center"
+        draggable={false}
+      />
+    </div>
   );
 }

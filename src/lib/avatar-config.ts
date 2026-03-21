@@ -1,39 +1,23 @@
+import type { Options as AdventurerOptions } from "@dicebear/adventurer";
+import type { Options as AvataaarsOptions } from "@dicebear/avataaars";
 import type { Options as LoreleiOptions } from "@dicebear/lorelei";
-import type { AvatarConfig } from "@/types/avatar";
-import { AVATAR_STYLE_LORELEI } from "@/types/avatar";
+import type { Options as MicahOptions } from "@dicebear/micah";
+import type { Options as ThumbsOptions } from "@dicebear/thumbs";
+import type { Options as ToonHeadOptions } from "@dicebear/toon-head";
+import {
+  DEFAULT_ADVENTURER,
+  DEFAULT_AVATAAARS,
+  DEFAULT_AVATAR,
+  DEFAULT_LORELEI,
+  DEFAULT_MICAH,
+  DEFAULT_THUMBS,
+  DEFAULT_TOON_HEAD,
+  defaultAvatarForStyle,
+  isAvatarStyleId,
+} from "@/lib/avatar-defaults";
+import type { AvatarConfig, AvatarStyleId } from "@/types/avatar";
 
-export const DEFAULT_AVATAR: AvatarConfig = {
-  style: AVATAR_STYLE_LORELEI,
-  seed: "",
-  options: {
-    hair: ["variant24"],
-    head: ["variant02"],
-    eyes: ["variant12"],
-    eyebrows: ["variant06"],
-    mouth: ["happy01"],
-    nose: ["variant03"],
-    glasses: ["variant01"],
-    glassesProbability: 0,
-    beard: ["variant01"],
-    beardProbability: 0,
-    earrings: ["variant01"],
-    earringsProbability: 0,
-    freckles: ["variant01"],
-    frecklesProbability: 0,
-    hairAccessories: ["flowers"],
-    hairAccessoriesProbability: 0,
-    hairColor: ["4a3728"],
-    skinColor: ["f5c9a8"],
-    eyebrowsColor: ["2d1f14"],
-    eyesColor: ["000000"],
-    mouthColor: ["a1624a"],
-    noseColor: ["c49a7c"],
-    glassesColor: ["1e293b"],
-    earringsColor: ["000000"],
-    frecklesColor: ["000000"],
-    hairAccessoriesColor: ["000000"],
-  },
-};
+export { DEFAULT_AVATAR } from "@/lib/avatar-defaults";
 
 /** 예전 커스텀 SVG 아바타 JSON (hairStyle, topType 등) */
 function isLegacyAvatarShape(o: Record<string, unknown>): boolean {
@@ -62,7 +46,7 @@ function migrateLegacyAvatar(
   o: Record<string, unknown>,
 ): AvatarConfig {
   return mergeAvatarConfig({
-    style: AVATAR_STYLE_LORELEI,
+    style: "lorelei",
     seed: legacySeedFromObject(o),
     options: {},
   });
@@ -72,32 +56,97 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return v !== null && typeof v === "object" && !Array.isArray(v);
 }
 
-/** DB에서 온 options를 기본값과 병합 */
 function mergeLoreleiOptions(raw: unknown): LoreleiOptions {
-  if (!isPlainObject(raw)) return { ...DEFAULT_AVATAR.options };
-  return { ...DEFAULT_AVATAR.options, ...(raw as LoreleiOptions) };
+  if (!isPlainObject(raw)) return { ...DEFAULT_LORELEI.options };
+  return { ...DEFAULT_LORELEI.options, ...(raw as LoreleiOptions) };
+}
+
+function mergeAvataaarsOptions(raw: unknown): AvataaarsOptions {
+  if (!isPlainObject(raw)) return { ...DEFAULT_AVATAAARS.options };
+  return { ...DEFAULT_AVATAAARS.options, ...(raw as AvataaarsOptions) };
+}
+
+function mergeMicahOptions(raw: unknown): MicahOptions {
+  if (!isPlainObject(raw)) return { ...DEFAULT_MICAH.options };
+  return { ...DEFAULT_MICAH.options, ...(raw as MicahOptions) };
+}
+
+function mergeToonHeadOptions(raw: unknown): ToonHeadOptions {
+  if (!isPlainObject(raw)) return { ...DEFAULT_TOON_HEAD.options };
+  return { ...DEFAULT_TOON_HEAD.options, ...(raw as ToonHeadOptions) };
+}
+
+function mergeThumbsOptions(raw: unknown): ThumbsOptions {
+  if (!isPlainObject(raw)) return { ...DEFAULT_THUMBS.options };
+  return { ...DEFAULT_THUMBS.options, ...(raw as ThumbsOptions) };
+}
+
+function mergeAdventurerOptions(raw: unknown): AdventurerOptions {
+  if (!isPlainObject(raw)) return { ...DEFAULT_ADVENTURER.options };
+  return { ...DEFAULT_ADVENTURER.options, ...(raw as AdventurerOptions) };
 }
 
 /** DB/JSON → 안전한 AvatarConfig */
 export function parseAvatarConfig(raw: unknown): AvatarConfig {
   if (raw == null || typeof raw !== "object") {
-    return { ...DEFAULT_AVATAR, options: { ...DEFAULT_AVATAR.options } };
+    return defaultAvatarForStyle("thumbs");
   }
   const o = raw as Record<string, unknown>;
 
-  if (o.style === AVATAR_STYLE_LORELEI && typeof o.seed === "string") {
-    return mergeAvatarConfig({
-      style: AVATAR_STYLE_LORELEI,
-      seed: o.seed,
-      options: mergeLoreleiOptions(o.options),
-    });
+  const styleRaw = o.style;
+  const seed = typeof o.seed === "string" ? o.seed : "";
+
+  if (isAvatarStyleId(String(styleRaw))) {
+    const style = styleRaw as AvatarStyleId;
+    switch (style) {
+      case "lorelei":
+        return mergeAvatarConfig({
+          style: "lorelei",
+          seed,
+          options: mergeLoreleiOptions(o.options),
+        });
+      case "avataaars":
+        return mergeAvatarConfig({
+          style: "avataaars",
+          seed,
+          options: mergeAvataaarsOptions(o.options),
+        });
+      case "micah":
+        return mergeAvatarConfig({
+          style: "micah",
+          seed,
+          options: mergeMicahOptions(o.options),
+        });
+      case "toon-head":
+        return mergeAvatarConfig({
+          style: "toon-head",
+          seed,
+          options: mergeToonHeadOptions(o.options),
+        });
+      case "thumbs":
+        return mergeAvatarConfig({
+          style: "thumbs",
+          seed,
+          options: mergeThumbsOptions(o.options),
+        });
+      case "adventurer":
+        return mergeAvatarConfig({
+          style: "adventurer",
+          seed,
+          options: mergeAdventurerOptions(o.options),
+        });
+      default: {
+        const _e: never = style;
+        return _e;
+      }
+    }
   }
 
   if (isLegacyAvatarShape(o)) {
     return migrateLegacyAvatar(o);
   }
 
-  return { ...DEFAULT_AVATAR, options: { ...DEFAULT_AVATAR.options } };
+  return defaultAvatarForStyle("thumbs");
 }
 
 /** 저장 시 시드는 저장하지 않음(회원 id로만 렌더 보조) */
@@ -108,16 +157,66 @@ export function avatarConfigForSave(cfg: AvatarConfig): AvatarConfig {
 export function mergeAvatarConfig(
   partial: Partial<AvatarConfig> | null | undefined,
 ): AvatarConfig {
-  const base = DEFAULT_AVATAR;
-  if (!partial || partial.style !== AVATAR_STYLE_LORELEI) {
-    return { ...base, options: { ...base.options } };
+  if (!partial?.style) {
+    return defaultAvatarForStyle("lorelei");
   }
-  return {
-    style: AVATAR_STYLE_LORELEI,
-    seed: typeof partial.seed === "string" ? partial.seed : base.seed,
-    options: {
-      ...base.options,
-      ...(partial.options ?? {}),
-    },
-  };
+  const seed = typeof partial.seed === "string" ? partial.seed : "";
+  switch (partial.style) {
+    case "lorelei":
+      return {
+        style: "lorelei",
+        seed,
+        options: {
+          ...DEFAULT_LORELEI.options,
+          ...((partial as { options?: LoreleiOptions }).options ?? {}),
+        },
+      };
+    case "avataaars":
+      return {
+        style: "avataaars",
+        seed,
+        options: {
+          ...DEFAULT_AVATAAARS.options,
+          ...((partial as { options?: AvataaarsOptions }).options ?? {}),
+        },
+      };
+    case "micah":
+      return {
+        style: "micah",
+        seed,
+        options: {
+          ...DEFAULT_MICAH.options,
+          ...((partial as { options?: MicahOptions }).options ?? {}),
+        },
+      };
+    case "toon-head":
+      return {
+        style: "toon-head",
+        seed,
+        options: {
+          ...DEFAULT_TOON_HEAD.options,
+          ...((partial as { options?: ToonHeadOptions }).options ?? {}),
+        },
+      };
+    case "thumbs":
+      return {
+        style: "thumbs",
+        seed,
+        options: {
+          ...DEFAULT_THUMBS.options,
+          ...((partial as { options?: ThumbsOptions }).options ?? {}),
+        },
+      };
+    case "adventurer":
+      return {
+        style: "adventurer",
+        seed,
+        options: {
+          ...DEFAULT_ADVENTURER.options,
+          ...((partial as { options?: AdventurerOptions }).options ?? {}),
+        },
+      };
+    default:
+      return defaultAvatarForStyle("thumbs");
+  }
 }
