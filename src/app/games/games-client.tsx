@@ -1,5 +1,6 @@
 "use client";
 
+import { RuleMasterCollapsible } from "@/components/rule-master-collapsible";
 import { useAuth, useSupabase } from "@/components/auth-provider";
 import { fetchGames, getGameGenres } from "@/lib/games-api";
 import { fetchProfile } from "@/lib/profile-api";
@@ -281,12 +282,10 @@ export function GamesClient() {
                   )}
                 </div>
                 <div>
-                  <span className="text-amber-900/55">룰마스터 가능: </span>
-                  {rm.length ? (
-                    <span className="leading-snug">{rm.join(", ")}</span>
-                  ) : (
-                    <span className="text-amber-800/50">—</span>
-                  )}
+                  <span className="text-amber-900/55">룰마스터 가능</span>
+                  <div className="mt-1">
+                    <RuleMasterCollapsible names={rm} countLabel="명" />
+                  </div>
                 </div>
                 <div>
                   <span className="text-amber-900/55">추가한 사람: </span>
@@ -294,12 +293,16 @@ export function GamesClient() {
                 </div>
                 {(g.notes || g.extraNotes) && (
                   <div className="border-t border-amber-900/10 pt-2 text-amber-900/85">
-                    {g.notes && <p className="break-words">{g.notes}</p>}
-                    {g.extraNotes && (
-                      <p className="mt-1 break-words text-xs text-amber-800/70">
-                        {g.extraNotes}
-                      </p>
-                    )}
+                    <div className="max-h-52 overflow-y-auto overscroll-y-contain text-sm leading-relaxed [overflow-wrap:anywhere]">
+                      {g.notes && (
+                        <p className="break-words whitespace-pre-wrap">{g.notes}</p>
+                      )}
+                      {g.extraNotes && (
+                        <p className="mt-1 break-words text-xs leading-relaxed text-amber-800/70 whitespace-pre-wrap">
+                          {g.extraNotes}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -375,25 +378,29 @@ export function GamesClient() {
                       </span>
                     )}
                   </td>
-                  <td className="max-w-[200px] px-3 py-2.5 text-amber-900/85">
-                    {rm.length ? (
-                      <span className="leading-snug">{rm.join(", ")}</span>
-                    ) : (
-                      <span className="text-amber-800/50">—</span>
-                    )}
+                  <td className="min-w-[10rem] max-w-[14rem] align-top px-3 py-2.5 text-amber-900/85">
+                    <RuleMasterCollapsible names={rm} countLabel="명" />
                   </td>
                   <td className="px-3 py-2.5 text-amber-900/90">
                     {g.addedByName ?? "—"}
                   </td>
-                  <td className="max-w-[200px] px-3 py-2.5 text-amber-900/85">
-                    <div className="space-y-1">
-                      {g.notes && <p>{g.notes}</p>}
-                      {g.extraNotes && (
-                        <p className="text-xs text-amber-800/70">
-                          {g.extraNotes}
-                        </p>
-                      )}
-                    </div>
+                  <td className="min-w-[12rem] max-w-md align-top px-3 py-2.5 text-amber-900/85">
+                    {g.notes || g.extraNotes ? (
+                      <div className="max-h-52 overflow-y-auto overscroll-y-contain pr-1 text-sm leading-relaxed [overflow-wrap:anywhere]">
+                        {g.notes && (
+                          <p className="break-words whitespace-pre-wrap">
+                            {g.notes}
+                          </p>
+                        )}
+                        {g.extraNotes && (
+                          <p className="mt-1 break-words text-xs leading-relaxed text-amber-800/75 whitespace-pre-wrap">
+                            {g.extraNotes}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-amber-800/50">—</span>
+                    )}
                   </td>
                 </tr>
               );

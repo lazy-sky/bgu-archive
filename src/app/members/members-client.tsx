@@ -1,5 +1,6 @@
 "use client";
 
+import { RuleMasterCollapsible } from "@/components/rule-master-collapsible";
 import { useSupabase } from "@/components/auth-provider";
 import { fetchMembers } from "@/lib/members-api";
 import { useQuery } from "@tanstack/react-query";
@@ -71,11 +72,12 @@ export function MembersClient() {
             <p className="text-xs font-medium uppercase tracking-wide text-amber-900/50">
               룰마스터 가능
             </p>
-            <ul className="mt-1 list-inside list-disc text-sm text-amber-900/90">
-              {m.ruleMasterGames.map((g) => (
-                <li key={g}>{g}</li>
-              ))}
-            </ul>
+            <div className="mt-1.5">
+              <RuleMasterCollapsible
+                names={m.ruleMasterGames}
+                countLabel="게임"
+              />
+            </div>
           </div>
         </li>
       ))}

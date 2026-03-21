@@ -1,5 +1,6 @@
 "use client";
 
+import { RuleMasterCollapsible } from "@/components/rule-master-collapsible";
 import { canAccommodatePlayerCount } from "@/lib/game-capacity";
 import { formatMaxPlayers, formatMinPlayers } from "@/lib/format-players";
 import type { Game } from "@/types/game";
@@ -195,10 +196,12 @@ export function GameRecommendPanel({
                           <span className="text-amber-800/60">—</span>
                         )}
                       </div>
-                      <p className="mt-2 text-sm text-amber-900/90">
-                        <span className="text-amber-900/55">룰마스터: </span>
-                        {rms.length ? rms.join(", ") : "—"}
-                      </p>
+                      <div className="mt-2 text-sm text-amber-900/90">
+                        <span className="text-amber-900/55">룰마스터</span>
+                        <div className="mt-1">
+                          <RuleMasterCollapsible names={rms} countLabel="명" />
+                        </div>
+                      </div>
                     </li>
                   );
                 })}
@@ -252,8 +255,8 @@ export function GameRecommendPanel({
                             "—"
                           )}
                         </td>
-                        <td className="max-w-[220px] px-3 py-2 text-amber-900/90">
-                          {rms.length ? rms.join(", ") : "—"}
+                        <td className="min-w-[10rem] max-w-[14rem] align-top px-3 py-2 text-amber-900/90">
+                          <RuleMasterCollapsible names={rms} countLabel="명" />
                         </td>
                       </tr>
                     );
