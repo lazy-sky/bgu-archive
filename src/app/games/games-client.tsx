@@ -11,12 +11,14 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+const DIFFICULTY_LEVELS = [1, 2, 3, 4] as const;
+
 function filterGames(
   list: Game[],
   q: string,
   genre: string,
   beginner: "all" | "yes" | "no",
-  maxDifficulty: number,
+  difficultyLevels: Set<number>,
 ): Game[] {
   const needle = q.trim().toLowerCase();
   return list.filter((g) => {
@@ -24,7 +26,11 @@ function filterGames(
     if (genre && g.genre !== genre) return false;
     if (beginner === "yes" && !g.beginnerFriendly) return false;
     if (beginner === "no" && g.beginnerFriendly) return false;
-    if (g.difficulty != null && g.difficulty > maxDifficulty) return false;
+    if (difficultyLevels.size > 0) {
+      if (g.difficulty != null && !difficultyLevels.has(g.difficulty)) {
+        return false;
+      }
+    }
     return true;
   });
 }
@@ -89,13 +95,24 @@ export function GamesClient() {
   const [q, setQ] = useState("");
   const [genre, setGenre] = useState("");
   const [beginner, setBeginner] = useState<"all" | "yes" | "no">("all");
-  const [maxDifficulty, setMaxDifficulty] = useState(4);
+  const [difficultyLevels, setDifficultyLevels] = useState<Set<number>>(
+    () => new Set(DIFFICULTY_LEVELS),
+  );
 
   const genres = useMemo(() => getGameGenres(games), [games]);
   const filtered = useMemo(
-    () => filterGames(games, q, genre, beginner, maxDifficulty),
-    [games, q, genre, beginner, maxDifficulty],
+    () => filterGames(games, q, genre, beginner, difficultyLevels),
+    [games, q, genre, beginner, difficultyLevels],
   );
+
+  function toggleDifficultyLevel(level: number) {
+    setDifficultyLevels((prev) => {
+      const next = new Set(prev);
+      if (next.has(level)) next.delete(level);
+      else next.add(level);
+      return next;
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -131,7 +148,7 @@ export function GamesClient() {
       </div>
 
       <div className="flex flex-col gap-4 rounded-xl border border-amber-900/10 bg-white/60 p-4 shadow-sm">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-amber-900/70">검색</span>
             <input
@@ -171,21 +188,32 @@ export function GamesClient() {
               <option value="no">비입문만</option>
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-amber-900/70">난이도 이하</span>
-            <select
-              value={maxDifficulty}
-              onChange={(e) => setMaxDifficulty(Number(e.target.value))}
-              className="rounded-lg border border-amber-900/15 bg-white px-3 py-2 text-amber-950 outline-none focus:ring-2 focus:ring-amber-400/30"
-            >
-              {[1, 2, 3, 4].map((n) => (
-                <option key={n} value={n}>
-                  {n} 이하
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
+        <fieldset className="min-w-0 border-0 p-0">
+          <legend className="text-sm font-normal text-amber-900/70">
+            난이도
+          </legend>
+          <p className="mt-1 text-xs text-amber-800/60">
+            표시할 단계만 선택합니다. 하나도 선택하지 않으면 난이도로는 걸러지지
+            않습니다. 미기재(—) 게임은 항상 나옵니다.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+            {DIFFICULTY_LEVELS.map((level) => (
+              <label
+                key={level}
+                className="inline-flex cursor-pointer items-center gap-2 text-sm text-amber-950 has-[:focus-visible]:rounded has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-amber-400/40"
+              >
+                <input
+                  type="checkbox"
+                  checked={difficultyLevels.has(level)}
+                  onChange={() => toggleDifficultyLevel(level)}
+                  className="rounded border-amber-900/30"
+                />
+                <span className="tabular-nums">{level}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
       </div>
 
       <ul className="space-y-3 md:hidden" role="list">
