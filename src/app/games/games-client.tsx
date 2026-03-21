@@ -311,22 +311,40 @@ export function GamesClient() {
         })}
       </ul>
 
-      <div className="hidden overflow-x-auto rounded-xl border border-amber-900/10 bg-white/80 shadow-sm [touch-action:pan-x] md:block">
-        <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
+      <div className="hidden rounded-xl border border-amber-900/10 bg-white/80 shadow-sm md:block">
+        <table className="w-full table-fixed border-collapse text-left text-sm">
+          <colgroup>
+            <col className="w-10" />
+            <col className="w-[18%]" />
+            <col className="w-11" />
+            <col className="w-[9%]" />
+            <col className="w-[4.75rem]" />
+            <col className="w-[5.25rem]" />
+            <col className="w-14" />
+            <col className="w-[11rem]" />
+            <col className="w-[5.5rem]" />
+            <col className="min-w-0" />
+          </colgroup>
           <thead>
             <tr className="border-b border-amber-900/10 bg-amber-100/50 text-amber-950">
-              <th className="w-12 px-2 py-3 text-center font-medium tabular-nums text-amber-900/70">
+              <th className="px-1 py-2.5 text-center font-medium tabular-nums text-amber-900/70">
                 번호
               </th>
-              <th className="px-3 py-3 font-medium">게임명</th>
-              <th className="px-3 py-3 font-medium">난이도</th>
-              <th className="px-3 py-3 font-medium">장르</th>
-              <th className="px-3 py-3 font-medium">인원(최소)</th>
-              <th className="px-3 py-3 font-medium">인원(최대)</th>
-              <th className="px-3 py-3 font-medium">입문</th>
-              <th className="px-3 py-3 font-medium">룰마스터 가능</th>
-              <th className="px-3 py-3 font-medium">추가한 사람</th>
-              <th className="px-3 py-3 font-medium">비고</th>
+              <th className="px-2 py-2.5 font-medium">게임명</th>
+              <th className="px-3 py-2.5 text-center font-medium">난이도</th>
+              <th className="px-2 py-2.5 font-medium">장르</th>
+              <th className="whitespace-nowrap px-1 py-2.5 text-center text-xs font-medium">
+                인원(최소)
+              </th>
+              <th className="whitespace-nowrap px-1 py-2.5 text-center text-xs font-medium">
+                인원(최대)
+              </th>
+              <th className="px-2 py-2.5 text-center font-medium">입문</th>
+              <th className="px-2 py-2.5 font-medium">룰마스터</th>
+              <th className="whitespace-nowrap px-1 py-2.5 text-center text-xs font-medium">
+                추가한 사람
+              </th>
+              <th className="min-w-0 px-2 py-2.5 font-medium">비고</th>
             </tr>
           </thead>
           <tbody>
@@ -338,12 +356,14 @@ export function GamesClient() {
                   key={g.id}
                   className="border-b border-amber-900/5 odd:bg-amber-50/30 hover:bg-amber-100/40"
                 >
-                  <td className="px-2 py-2.5 text-center tabular-nums text-amber-800/75">
+                  <td className="px-1 py-2.5 text-center tabular-nums text-amber-800/75">
                     {n}
                   </td>
-                  <td className="max-w-[220px] px-3 py-2.5 font-medium text-amber-950">
+                  <td className="min-w-0 px-2 py-2.5 align-top font-medium text-amber-950">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <span className="min-w-0">{g.name}</span>
+                      <span className="min-w-0 break-words [overflow-wrap:anywhere]">
+                        {g.name}
+                      </span>
                       {session?.user.id &&
                         (isAdmin ||
                           (g.addedBy != null &&
@@ -357,17 +377,21 @@ export function GamesClient() {
                         )}
                     </div>
                   </td>
-                  <td className="px-3 py-2.5 text-amber-900/90">
+                  <td className="px-2 py-2.5 text-center text-amber-900/90">
                     {g.difficulty ?? "—"}
                   </td>
-                  <td className="px-3 py-2.5 text-amber-900/90">{g.genre}</td>
-                  <td className="px-3 py-2.5 text-amber-800/80">
+                  <td className="min-w-0 px-2 py-2.5 align-top text-amber-900/90">
+                    <span className="break-words [overflow-wrap:anywhere]">
+                      {g.genre}
+                    </span>
+                  </td>
+                  <td className="px-1 py-2.5 text-center text-xs text-amber-800/80">
                     {formatMinPlayers(g)}
                   </td>
-                  <td className="px-3 py-2.5 text-amber-800/80">
+                  <td className="px-1 py-2.5 text-center text-xs text-amber-800/80">
                     {formatMaxPlayers(g)}
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="px-2 py-2.5 text-center">
                     {g.beginnerFriendly ? (
                       <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-900">
                         입문
@@ -378,15 +402,17 @@ export function GamesClient() {
                       </span>
                     )}
                   </td>
-                  <td className="min-w-[10rem] max-w-[14rem] align-top px-3 py-2.5 text-amber-900/85">
+                  <td className="min-w-0 align-top px-2 py-2.5 text-amber-900/85">
                     <RuleMasterCollapsible names={rm} countLabel="명" />
                   </td>
-                  <td className="px-3 py-2.5 text-amber-900/90">
-                    {g.addedByName ?? "—"}
+                  <td className="min-w-0 px-1 py-2.5 text-center text-xs text-amber-900/90">
+                    <span className="break-words [overflow-wrap:anywhere]">
+                      {g.addedByName ?? "—"}
+                    </span>
                   </td>
-                  <td className="min-w-[12rem] max-w-md align-top px-3 py-2.5 text-amber-900/85">
+                  <td className="min-w-0 align-top px-2 py-2.5 text-amber-900/85">
                     {g.notes || g.extraNotes ? (
-                      <div className="max-h-52 overflow-y-auto overscroll-y-contain pr-1 text-sm leading-relaxed [overflow-wrap:anywhere]">
+                      <div className="text-sm leading-relaxed [overflow-wrap:anywhere]">
                         {g.notes && (
                           <p className="break-words whitespace-pre-wrap">
                             {g.notes}

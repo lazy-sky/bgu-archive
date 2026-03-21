@@ -31,7 +31,7 @@ export function RuleMasterCollapsible({
           {countLabel} · 목록 보기
         </span>
       </summary>
-      <ul className="mt-1.5 max-h-44 max-w-[min(100%,22rem)] space-y-0.5 overflow-y-auto overscroll-y-contain border-l-2 border-amber-300/50 pl-2.5 text-sm leading-snug text-amber-900/95 [overflow-wrap:anywhere]">
+      <ul className="mt-1.5 max-h-44 min-w-0 max-w-full space-y-0.5 overflow-y-auto overscroll-y-contain border-l-2 border-amber-300/50 pl-2.5 text-sm leading-snug text-amber-900/95 [overflow-wrap:anywhere]">
         {names.map((n) => (
           <li key={n} className="break-words py-0.5">
             {n}
