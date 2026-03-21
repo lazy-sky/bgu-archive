@@ -27,7 +27,7 @@ export function GameRecommendPanel({
   const validN = Number.isFinite(n) && n >= 1;
 
   const recommended = useMemo(() => {
-    if (!validN) return [];
+    if (!Number.isFinite(n) || n < 1) return [];
     let list = games.filter((g) => canAccommodatePlayerCount(g, n));
 
     const selectedMembers = members.filter((m) => selectedIds.has(m.id));
@@ -53,8 +53,7 @@ export function GameRecommendPanel({
     return sorted;
   }, [
     games,
-    playerCount,
-    validN,
+    n,
     members,
     selectedIds,
     onlySelectedCanRule,
