@@ -16,7 +16,8 @@ export function AddGameForm() {
   const [difficulty, setDifficulty] = useState("1");
   const [genre, setGenre] = useState("");
   const [minPlayers, setMinPlayers] = useState("");
-  const [maxPlayers, setMaxPlayers] = useState("");
+  const [maxDigits, setMaxDigits] = useState("");
+  const [maxIsMinPlus, setMaxIsMinPlus] = useState(false);
   const [beginner, setBeginner] = useState(true);
   const [notes, setNotes] = useState("");
   const [extraNotes, setExtraNotes] = useState("");
@@ -53,10 +54,14 @@ export function AddGameForm() {
     e.preventDefault();
     if (!supabase || !session) return;
     setError(null);
-    const parsed = parseMaxPlayersInput(maxPlayers);
+    const maxCombined =
+      maxIsMinPlus && maxDigits.trim()
+        ? `${maxDigits.trim()}이상`
+        : maxDigits.trim();
+    const parsed = parseMaxPlayersInput(maxCombined);
     const minP = parseMinPlayersInput(minPlayers);
     setPending(true);
-    const trimmedMax = maxPlayers.trim();
+    const trimmedMax = maxCombined;
     const { error: err } = await supabase.from("games").insert({
       name: name.trim(),
       difficulty: Number(difficulty),
@@ -125,20 +130,36 @@ export function AddGameForm() {
           <input
             inputMode="numeric"
             value={minPlayers}
-            onChange={(e) => setMinPlayers(e.target.value)}
+            onChange={(e) =>
+              setMinPlayers(e.target.value.replace(/\D/g, ""))
+            }
             className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
             placeholder="비워 두면 미기재"
           />
         </label>
-        <label className="block text-sm">
-          <span className="text-amber-900/70">최대 인원</span>
-          <input
-            value={maxPlayers}
-            onChange={(e) => setMaxPlayers(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
-            placeholder="예: 4, 11이상, --"
-          />
-        </label>
+        <div className="space-y-2">
+          <label className="block text-sm">
+            <span className="text-amber-900/70">최대 인원</span>
+            <input
+              inputMode="numeric"
+              value={maxDigits}
+              onChange={(e) =>
+                setMaxDigits(e.target.value.replace(/\D/g, ""))
+              }
+              className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
+              placeholder="숫자만. 비우면 미기재"
+            />
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-amber-900/85">
+            <input
+              type="checkbox"
+              checked={maxIsMinPlus}
+              onChange={(e) => setMaxIsMinPlus(e.target.checked)}
+              className="rounded border-amber-900/30"
+            />
+            <span>이 숫자를 «N명 이상»으로 저장 (상한 없음)</span>
+          </label>
+        </div>
       </div>
       <label className="flex items-center gap-2 text-sm">
         <input

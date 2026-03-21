@@ -2,7 +2,7 @@
 
 import { RuleMasterCollapsible } from "@/components/rule-master-collapsible";
 import { canAccommodatePlayerCount } from "@/lib/game-capacity";
-import { formatMaxPlayers, formatMinPlayers } from "@/lib/format-players";
+import { formatPlayerRange } from "@/lib/format-players";
 import type { Game } from "@/types/game";
 import type { Member } from "@/types/member";
 import { useMemo, useState } from "react";
@@ -184,8 +184,7 @@ export function GameRecommendPanel({
                       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-amber-900/90">
                         <span>난이도 {g.difficulty ?? "—"}</span>
                         <span className="text-amber-800/80">{g.genre}</span>
-                        <span>{formatMinPlayers(g)}</span>
-                        <span>최대 {formatMaxPlayers(g)}</span>
+                        <span>인원 {formatPlayerRange(g)}</span>
                       </div>
                       <div className="mt-2 text-sm">
                         {g.beginnerFriendly ? (
@@ -206,17 +205,20 @@ export function GameRecommendPanel({
                   );
                 })}
               </ul>
-              <table className="hidden w-full min-w-[820px] text-left text-sm md:table">
+              <table className="hidden w-full min-w-[820px] text-left text-sm md:table [&_td]:align-middle [&_th]:align-middle">
                 <thead>
                   <tr className="border-b border-amber-900/10 bg-amber-50/80 text-amber-950">
                     <th className="w-12 px-2 py-2 text-center font-medium tabular-nums text-amber-900/70">
                       번호
                     </th>
                     <th className="px-3 py-2 font-medium">게임명</th>
-                    <th className="px-3 py-2 font-medium">난이도</th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium">
+                      난이도
+                    </th>
                     <th className="px-3 py-2 font-medium">장르</th>
-                    <th className="px-3 py-2 font-medium">인원(최소)</th>
-                    <th className="px-3 py-2 font-medium">인원(최대)</th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium">
+                      인원
+                    </th>
                     <th className="px-3 py-2 font-medium">입문</th>
                     <th className="px-3 py-2 font-medium">룰마스터 가능</th>
                   </tr>
@@ -240,11 +242,8 @@ export function GameRecommendPanel({
                           {g.difficulty ?? "—"}
                         </td>
                         <td className="px-3 py-2 text-amber-900/90">{g.genre}</td>
-                        <td className="px-3 py-2 text-amber-800/80">
-                          {formatMinPlayers(g)}
-                        </td>
-                        <td className="px-3 py-2 text-amber-800/80">
-                          {formatMaxPlayers(g)}
+                        <td className="whitespace-nowrap px-3 py-2 tabular-nums text-amber-800/80">
+                          {formatPlayerRange(g)}
                         </td>
                         <td className="px-3 py-2">
                           {g.beginnerFriendly ? (
@@ -255,7 +254,7 @@ export function GameRecommendPanel({
                             "—"
                           )}
                         </td>
-                        <td className="min-w-[10rem] max-w-[14rem] align-top px-3 py-2 text-amber-900/90">
+                        <td className="min-w-[10rem] max-w-[14rem] px-3 py-2 text-amber-900/90">
                           <RuleMasterCollapsible names={rms} countLabel="명" />
                         </td>
                       </tr>

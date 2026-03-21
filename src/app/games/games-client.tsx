@@ -5,8 +5,9 @@ import { useAuth, useSupabase } from "@/components/auth-provider";
 import { fetchGames, getGameGenres } from "@/lib/games-api";
 import { fetchProfile } from "@/lib/profile-api";
 import { fetchMembers } from "@/lib/members-api";
-import { formatMaxPlayers, formatMinPlayers } from "@/lib/format-players";
+import { formatPlayerRange } from "@/lib/format-players";
 import { buildRuleMastersByGameName } from "@/lib/rule-master";
+import { sortGames, type GameSortMode } from "@/lib/sort-games";
 import type { Game } from "@/types/game";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -99,11 +100,16 @@ export function GamesClient() {
   const [difficultyLevels, setDifficultyLevels] = useState<Set<number>>(
     () => new Set(DIFFICULTY_LEVELS),
   );
+  const [sortMode, setSortMode] = useState<GameSortMode>("name_asc");
 
   const genres = useMemo(() => getGameGenres(games), [games]);
   const filtered = useMemo(
     () => filterGames(games, q, genre, beginner, difficultyLevels),
     [games, q, genre, beginner, difficultyLevels],
+  );
+  const sorted = useMemo(
+    () => sortGames(filtered, sortMode),
+    [filtered, sortMode],
   );
 
   function toggleDifficultyLevel(level: number) {
@@ -149,7 +155,7 @@ export function GamesClient() {
       </div>
 
       <div className="flex flex-col gap-4 rounded-xl border border-amber-900/10 bg-white/60 p-4 shadow-sm">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-amber-900/70">검색</span>
             <input
@@ -187,6 +193,22 @@ export function GamesClient() {
               <option value="all">전체</option>
               <option value="yes">입문용만</option>
               <option value="no">비입문만</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-amber-900/70">정렬</span>
+            <select
+              value={sortMode}
+              onChange={(e) =>
+                setSortMode(e.target.value as GameSortMode)
+              }
+              className="rounded-lg border border-amber-900/15 bg-white px-3 py-2 text-amber-950 outline-none focus:ring-2 focus:ring-amber-400/30"
+            >
+              <option value="name_asc">가나다순</option>
+              <option value="difficulty_desc">난이도 높은순</option>
+              <option value="difficulty_asc">난이도 낮은순</option>
+              <option value="players_desc">인원수 많은 순</option>
+              <option value="players_asc">인원수 적은 순</option>
             </select>
           </label>
         </div>
@@ -235,7 +257,7 @@ export function GamesClient() {
       </div>
 
       <ul className="space-y-3 md:hidden" role="list">
-        {filtered.map((g, rowIndex) => {
+        {sorted.map((g, rowIndex) => {
           const rm = ruleMastersByGame.get(g.name) ?? [];
           const n = rowIndex + 1;
           return (
@@ -269,8 +291,7 @@ export function GamesClient() {
                   <span className="text-amber-800/80">· {g.genre}</span>
                 </div>
                 <div className="flex flex-wrap gap-x-3 gap-y-1 text-amber-800/85">
-                  <span>인원(최소) {formatMinPlayers(g)}</span>
-                  <span>인원(최대) {formatMaxPlayers(g)}</span>
+                  <span>인원 {formatPlayerRange(g)}</span>
                 </div>
                 <div>
                   {g.beginnerFriendly ? (
@@ -312,14 +333,13 @@ export function GamesClient() {
       </ul>
 
       <div className="hidden rounded-xl border border-amber-900/10 bg-white/80 shadow-sm md:block">
-        <table className="w-full table-fixed border-collapse text-left text-sm">
+        <table className="w-full table-fixed border-collapse text-left text-sm [&_td]:align-middle [&_th]:align-middle">
           <colgroup>
             <col className="w-10" />
             <col className="w-[18%]" />
-            <col className="w-11" />
+            <col className="w-[3.5rem]" />
             <col className="w-[9%]" />
-            <col className="w-[4.75rem]" />
-            <col className="w-[5.25rem]" />
+            <col className="w-[6.75rem]" />
             <col className="w-14" />
             <col className="w-[11rem]" />
             <col className="w-[5.5rem]" />
@@ -331,13 +351,12 @@ export function GamesClient() {
                 번호
               </th>
               <th className="px-2 py-2.5 font-medium">게임명</th>
-              <th className="px-3 py-2.5 text-center font-medium">난이도</th>
+              <th className="whitespace-nowrap px-3 py-2.5 text-center font-medium">
+                난이도
+              </th>
               <th className="px-2 py-2.5 font-medium">장르</th>
               <th className="whitespace-nowrap px-1 py-2.5 text-center text-xs font-medium">
-                인원(최소)
-              </th>
-              <th className="whitespace-nowrap px-1 py-2.5 text-center text-xs font-medium">
-                인원(최대)
+                인원
               </th>
               <th className="px-2 py-2.5 text-center font-medium">입문</th>
               <th className="px-2 py-2.5 font-medium">룰마스터</th>
@@ -348,7 +367,7 @@ export function GamesClient() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((g, rowIndex) => {
+            {sorted.map((g, rowIndex) => {
               const rm = ruleMastersByGame.get(g.name) ?? [];
               const n = rowIndex + 1;
               return (
@@ -359,7 +378,7 @@ export function GamesClient() {
                   <td className="px-1 py-2.5 text-center tabular-nums text-amber-800/75">
                     {n}
                   </td>
-                  <td className="min-w-0 px-2 py-2.5 align-top font-medium text-amber-950">
+                  <td className="min-w-0 px-2 py-2.5 font-medium text-amber-950">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       <span className="min-w-0 break-words [overflow-wrap:anywhere]">
                         {g.name}
@@ -385,11 +404,8 @@ export function GamesClient() {
                       {g.genre}
                     </span>
                   </td>
-                  <td className="px-1 py-2.5 text-center text-xs text-amber-800/80">
-                    {formatMinPlayers(g)}
-                  </td>
-                  <td className="px-1 py-2.5 text-center text-xs text-amber-800/80">
-                    {formatMaxPlayers(g)}
+                  <td className="whitespace-nowrap px-1 py-2.5 text-center text-xs tabular-nums text-amber-800/80">
+                    {formatPlayerRange(g)}
                   </td>
                   <td className="px-2 py-2.5 text-center">
                     {g.beginnerFriendly ? (
@@ -402,7 +418,7 @@ export function GamesClient() {
                       </span>
                     )}
                   </td>
-                  <td className="min-w-0 align-top px-2 py-2.5 text-amber-900/85">
+                  <td className="min-w-0 px-2 py-2.5 text-amber-900/85">
                     <RuleMasterCollapsible names={rm} countLabel="명" />
                   </td>
                   <td className="min-w-0 px-1 py-2.5 text-center text-xs text-amber-900/90">
@@ -410,7 +426,7 @@ export function GamesClient() {
                       {g.addedByName ?? "—"}
                     </span>
                   </td>
-                  <td className="min-w-0 align-top px-2 py-2.5 text-amber-900/85">
+                  <td className="min-w-0 px-2 py-2.5 text-amber-900/85">
                     {g.notes || g.extraNotes ? (
                       <div className="text-sm leading-relaxed [overflow-wrap:anywhere]">
                         {g.notes && (

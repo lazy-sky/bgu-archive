@@ -8,13 +8,26 @@ import { parseMaxPlayersInput } from "@/lib/parse-max-players";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { Game } from "@/types/game";
 import { useEffect, useState } from "react";
 
 type Props = { gameId: string };
 
-function maxPlayersFieldValue(raw: string | number | null | undefined): string {
-  if (raw == null || raw === "") return "";
-  return String(raw);
+function maxDigitsFromGame(game: Game): string {
+  if (game.maxPlayersKind === "number" || game.maxPlayersKind === "min_plus") {
+    if (game.maxPlayers != null) {
+      const n =
+        typeof game.maxPlayers === "number"
+          ? game.maxPlayers
+          : Number(String(game.maxPlayers).replace(/[^\d]/g, ""));
+      return Number.isFinite(n) ? String(n) : "";
+    }
+    return "";
+  }
+  if (game.maxPlayersKind === "text" && game.maxPlayers != null) {
+    return String(game.maxPlayers).replace(/\D/g, "");
+  }
+  return "";
 }
 
 export function EditGameForm({ gameId }: Props) {
@@ -26,7 +39,8 @@ export function EditGameForm({ gameId }: Props) {
   const [difficulty, setDifficulty] = useState("1");
   const [genre, setGenre] = useState("");
   const [minPlayers, setMinPlayers] = useState("");
-  const [maxPlayers, setMaxPlayers] = useState("");
+  const [maxDigits, setMaxDigits] = useState("");
+  const [maxIsMinPlus, setMaxIsMinPlus] = useState(false);
   const [beginner, setBeginner] = useState(true);
   const [notes, setNotes] = useState("");
   const [extraNotes, setExtraNotes] = useState("");
@@ -60,7 +74,8 @@ export function EditGameForm({ gameId }: Props) {
     setMinPlayers(
       game.minPlayers != null ? String(game.minPlayers) : "",
     );
-    setMaxPlayers(maxPlayersFieldValue(game.maxPlayersRaw));
+    setMaxDigits(maxDigitsFromGame(game));
+    setMaxIsMinPlus(game.maxPlayersKind === "min_plus");
     setBeginner(game.beginnerFriendly);
     setNotes(game.notes);
     setExtraNotes(game.extraNotes);
@@ -69,9 +84,13 @@ export function EditGameForm({ gameId }: Props) {
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (!supabase || !session) throw new Error("로그인 필요");
-      const parsed = parseMaxPlayersInput(maxPlayers);
+      const maxCombined =
+        maxIsMinPlus && maxDigits.trim()
+          ? `${maxDigits.trim()}이상`
+          : maxDigits.trim();
+      const parsed = parseMaxPlayersInput(maxCombined);
       const minP = parseMinPlayersInput(minPlayers);
-      const trimmedMax = maxPlayers.trim();
+      const trimmedMax = maxCombined;
       const { error: err } = await supabase
         .from("games")
         .update({
@@ -198,20 +217,36 @@ export function EditGameForm({ gameId }: Props) {
           <input
             inputMode="numeric"
             value={minPlayers}
-            onChange={(e) => setMinPlayers(e.target.value)}
+            onChange={(e) =>
+              setMinPlayers(e.target.value.replace(/\D/g, ""))
+            }
             className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
             placeholder="비워 두면 미기재"
           />
         </label>
-        <label className="block text-sm">
-          <span className="text-amber-900/70">최대 인원</span>
-          <input
-            value={maxPlayers}
-            onChange={(e) => setMaxPlayers(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
-            placeholder="예: 4, 11이상, --"
-          />
-        </label>
+        <div className="space-y-2">
+          <label className="block text-sm">
+            <span className="text-amber-900/70">최대 인원</span>
+            <input
+              inputMode="numeric"
+              value={maxDigits}
+              onChange={(e) =>
+                setMaxDigits(e.target.value.replace(/\D/g, ""))
+              }
+              className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
+              placeholder="숫자만. 비우면 미기재"
+            />
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-amber-900/85">
+            <input
+              type="checkbox"
+              checked={maxIsMinPlus}
+              onChange={(e) => setMaxIsMinPlus(e.target.checked)}
+              className="rounded border-amber-900/30"
+            />
+            <span>이 숫자를 «N명 이상»으로 저장 (상한 없음)</span>
+          </label>
+        </div>
       </div>
       <label className="flex items-center gap-2 text-sm">
         <input
