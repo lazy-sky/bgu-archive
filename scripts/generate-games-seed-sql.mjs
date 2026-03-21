@@ -4,15 +4,12 @@
  * 실행: pnpm games:sql
  * 출력: supabase/sql/seed_games.sql
  *
- * 전제: 스키마 마이그레이션 적용됨, 시드 회원(김하늘 제외) 프로필이 존재
+ * 전제: 스키마 마이그레이션 적용됨, 김하늘 프로필 존재
  */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  mulberry32,
-  SEED_ADDED_BY_DISPLAY_NAMES,
-} from "./seed-members-data.mjs";
+import { isGameAddedByExcludedFromKim } from "./seed-members-data.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
@@ -38,11 +35,11 @@ function sqlInt(n) {
   return Number.isNaN(x) ? "NULL" : String(Math.trunc(x));
 }
 
-function addedBySubquery(i) {
-  const next = mulberry32((i * 0x9e3779b9 + 0xbeef) >>> 0);
-  const idx = Math.floor(next() * SEED_ADDED_BY_DISPLAY_NAMES.length);
-  const name = SEED_ADDED_BY_DISPLAY_NAMES[idx];
-  return `(SELECT id FROM public.profiles WHERE display_name = ${sqlLiteral(name)} LIMIT 1)`;
+function addedByExpression(g) {
+  if (isGameAddedByExcludedFromKim(g.name)) {
+    return "NULL";
+  }
+  return `(SELECT id FROM public.profiles WHERE display_name = '김하늘' LIMIT 1)`;
 }
 
 function minPlayersFromJson(g) {
@@ -52,7 +49,7 @@ function minPlayersFromJson(g) {
   return Math.floor(n);
 }
 
-function mapRow(g, i) {
+function mapRow(g) {
   const raw =
     g.maxPlayersRaw == null ? "NULL" : sqlLiteral(String(g.maxPlayersRaw));
   const val =
@@ -60,7 +57,7 @@ function mapRow(g, i) {
       ? "NULL"
       : sqlLiteral(String(g.maxPlayers));
 
-  return `  (${sqlLiteral(g.name)}, ${sqlInt(g.difficulty)}, ${sqlTextNotEmpty(g.genre)}, ${sqlInt(minPlayersFromJson(g))}, ${raw}, ${sqlLiteral(g.maxPlayersKind)}, ${val}, ${g.beginnerFriendly ? "true" : "false"}, ${sqlTextNotEmpty(g.notes)}, ${sqlTextNotEmpty(g.extraNotes)}, ${addedBySubquery(i)})`;
+  return `  (${sqlLiteral(g.name)}, ${sqlInt(g.difficulty)}, ${sqlTextNotEmpty(g.genre)}, ${sqlInt(minPlayersFromJson(g))}, ${raw}, ${sqlLiteral(g.maxPlayersKind)}, ${val}, ${g.beginnerFriendly ? "true" : "false"}, ${sqlTextNotEmpty(g.notes)}, ${sqlTextNotEmpty(g.extraNotes)}, ${addedByExpression(g)})`;
 }
 
 function main() {
@@ -70,14 +67,13 @@ function main() {
   }
 
   const games = JSON.parse(fs.readFileSync(gamesPath, "utf8"));
-  const lines = games.map((g, i) => mapRow(g, i));
+  const lines = games.map((g) => mapRow(g));
 
   const sql = `/*
  * games 테이블 시드 (games.json 기준)
  * Supabase → SQL Editor 에 붙여넣고 Run
  *
- * 주의: 기존 games 행을 지웁니다. added_by 는 김하늘을 제외한 시드 회원(display_name) 중
- * games.json 순번마다 결정적으로 골라 지정합니다 (seed-supabase.mjs 와 동일 규칙).
+ * 주의: 기존 games 행을 지웁니다. added_by 는 기본 김하늘, 이름이 「딥씨 크루」인 행만 NULL.
  */
 
 DELETE FROM public.games;

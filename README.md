@@ -25,11 +25,13 @@ pnpm이 없으면 `corepack enable` 후 `pnpm`을 쓰거나, `npx pnpm@10 instal
 pnpm seed
 ```
 
-회원(시드) + 게임 전체가 들어갑니다. 게임 `added_by`는 **김하늘을 제외한** 시드 회원에게 결정적 랜덤 배정됩니다. 이미 `games`에 행이 있으면 건너뜁니다. 덮어쓰려면 `FORCE=1 pnpm seed`.
+회원(시드) **김하늘 1명** + 게임 전체가 들어갑니다. 게임 `added_by`는 기본 **김하늘**이고, 이름이 **「딥씨 크루」**인 행만 `null`(운영에서 지정 가능)입니다. 이미 `games`에 행이 있으면 건너뜁니다. 덮어쓰려면 `FORCE=1 pnpm seed`.
 
-`pnpm seed`는 **가짜 회원 10명**을 만들고, `rule_master_games`는 `games.json`에 있는 게임 이름 중에서 **임의(시드 고정)**로 골라 넣습니다. 정의는 `scripts/seed-members-data.mjs` 참고.
+`rule_master_games`는 `games.json`에 있는 게임 이름 중에서 **임의(시드 고정)**로 골라 넣습니다. 정의는 `scripts/seed-members-data.mjs` 참고.
 
-시드 계정 예: `kim.haneul@bgu.local` … `min.mini@bgu.local` (비밀번호 기본 `bgu-dev-2025`, `SEED_PASSWORD`로 변경 가능). `games`가 이미 있으면 게임 삽입은 건너뛰고 **회원 프로필만** 다시 갱신합니다.
+시드 계정: `kim.haneul@bgu.local` (비밀번호 기본 `bgu-dev-2025`, `SEED_PASSWORD`로 변경 가능). 예전에 넣었던 **더미 회원**은 `pnpm seed:delete-dummies`로 정리할 수 있습니다(서비스 롤 키 필요).
+
+`games`가 이미 있으면 게임 삽입은 건너뛰고 **회원 프로필만** 다시 갱신합니다.
 
 **선택:** 로컬에서 Postgres로 마이그레이션을 돌리려면 `pnpm db:migrate` (`SUPABASE_DB_PASSWORD` 또는 `DATABASE_URL` 필요).
 

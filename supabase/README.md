@@ -25,7 +25,7 @@
 pnpm games:from-xlsx -- "/절대/경로/BGU 게임 목록(하늘).xlsx"
 ```
 
-엑셀 → `src/data/games.json` 갱신 → 원격 DB `games` **전체 교체**까지 한 번에 합니다. (`added_by`는 김하늘 제외 시드 회원에게 결정적 랜덤 배정 — `seed-supabase.mjs`와 동일 규칙)
+엑셀 → `src/data/games.json` 갱신 → 원격 DB `games` **전체 교체**까지 한 번에 합니다. (`added_by`는 기본 김하늘, 「딥씨 크루」만 예외 — `seed-supabase.mjs`와 동일 규칙)
 
 ### B) SQL Editor만 쓰기
 
@@ -44,7 +44,7 @@ pnpm games:from-xlsx -- "/절대/경로/BGU 게임 목록(하늘).xlsx"
 3. 생성된 [`sql/seed_games.sql`](./sql/seed_games.sql) 내용을 **SQL Editor**에 붙여 **Run**.
 
    - 기존 `games` 행을 `DELETE` 한 뒤 `INSERT` 합니다.
-   - `added_by`는 김하늘을 제외한 시드 회원(`display_name`) 중에서 `games.json` 순번마다 골라 지정합니다. **시드 회원 프로필이 없으면** `pnpm seed`로 넣은 뒤 실행하세요.
+   - `added_by`는 기본 김하늘 프로필을 가리킵니다(「딥씨 크루」는 NULL). **김하늘 프로필이 없으면** `pnpm seed`로 넣은 뒤 실행하세요.
 
 ## 3. 회원 등 초기 시드 (선택)
 
@@ -54,7 +54,15 @@ pnpm seed
 
 (서비스 롤 키 필요)
 
-가짜 회원 **10명** + `games.json` 기준으로 골라 넣은 **룰마스터 가능 게임 목록**(`rule_master_games`). 프로필 정의는 `scripts/seed-members-data.mjs` 참고.
+시드 회원은 **김하늘 1명** + `games.json` 기준으로 골라 넣은 **룰마스터 가능 게임 목록**(`rule_master_games`). 프로필 정의는 `scripts/seed-members-data.mjs` 참고.
+
+예전에 만들어 둔 더미 계정을 지우고 `games.added_by`를 정리하려면(김하늘 제외 auth 삭제):
+
+```bash
+pnpm seed:delete-dummies
+```
+
+(선택) SQL만으로 `added_by`만 맞추려면 [`migrations/20250321000005_cleanup_dummy_seed.sql`](./migrations/20250321000005_cleanup_dummy_seed.sql) 을 SQL Editor에서 실행합니다.
 
 ## 4. Google 로그인 (앱은 이메일/비밀번호 없음)
 

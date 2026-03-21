@@ -1,5 +1,6 @@
 /**
- * 서비스 롤로 시드: 회원(auth + profiles) + games.json 전체(추가자: 김하늘 제외 회원에게 결정적 랜덤 배정)
+ * 서비스 롤로 시드: 회원(auth + profiles) + games.json 전체
+ * games added_by: 기본 김하늘, `딥씨 크루`만 예외(null — 운영에서 지정 가능)
  *
  * 필요: SUPABASE_URL(또는 NEXT_PUBLIC_SUPABASE_URL), SUPABASE_SERVICE_ROLE_KEY
  * 선택: SEED_PASSWORD (기본 bgu-dev-2025), FORCE=1 이면 games 전체 삭제 후 재삽입
@@ -11,7 +12,10 @@ import dotenv from "dotenv";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildSeedUsers, mulberry32 } from "./seed-members-data.mjs";
+import {
+  buildSeedUsers,
+  isGameAddedByExcludedFromKim,
+} from "./seed-members-data.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
@@ -121,9 +125,9 @@ async function main() {
     console.log("  OK", u.email, id);
   }
 
-  const nonKim = ids.filter((x) => x.email !== "kim.haneul@bgu.local");
-  if (nonKim.length === 0) {
-    throw new Error("김하늘 외 시드 계정이 필요합니다.");
+  const kim = ids.find((x) => x.email === "kim.haneul@bgu.local");
+  if (!kim) {
+    throw new Error("김하늘(kim.haneul@bgu.local) 시드 계정이 필요합니다.");
   }
 
   const games = gamesJson;
@@ -148,15 +152,14 @@ async function main() {
     if (delErr) throw delErr;
   }
 
-  function addedByIdForGameIndex(i) {
-    const next = mulberry32((i * 0x9e3779b9 + 0xbeef) >>> 0);
-    const idx = Math.floor(next() * nonKim.length);
-    return nonKim[idx].id;
+  function addedByForGame(g) {
+    if (isGameAddedByExcludedFromKim(g.name)) return null;
+    return kim.id;
   }
 
-  const rows = games.map((g, i) => mapJsonGame(g, addedByIdForGameIndex(i)));
+  const rows = games.map((g) => mapJsonGame(g, addedByForGame(g)));
   console.log(
-    `시드: 게임 ${rows.length}건 (추가자: 김하늘 제외 ${nonKim.length}명 중 결정적 랜덤)…`,
+    `시드: 게임 ${rows.length}건 (추가자: 김하늘, 이름이 「딥씨 크루」인 행만 added_by null)…`,
   );
 
   const { error: insErr } = await supabase.from("games").insert(rows);

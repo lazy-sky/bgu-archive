@@ -32,7 +32,7 @@ export function pickRuleMasterGames(gameNames, seed, count = 4) {
   return copy.slice(0, n);
 }
 
-/** 프로필만 (룰마스터 목록은 buildSeedUsers 에서 채움) */
+/** 프로필만 (룰마스터 목록은 buildSeedUsers 에서 채움). 예시 더미 다수는 제거하고 김하늘만 둡니다. */
 export const SEED_MEMBER_PROFILES = [
   {
     email: "kim.haneul@bgu.local",
@@ -43,93 +43,17 @@ export const SEED_MEMBER_PROFILES = [
     bio: "신입 환영 담당. 입문용 게임 추천 좋아해요.",
     ruleSeed: 11,
   },
-  {
-    email: "lee.jeon@bgu.local",
-    display_name: "이전략",
-    mbti: "INTJ",
-    favorite_genres: ["전략", "엔진 빌딩"],
-    favorite_game_types: ["중·장시간", "빡센 판"],
-    bio: "메카닉 읽는 속도가 빠른 편. 룰북 정리 도와줄게요.",
-    ruleSeed: 22,
-  },
-  {
-    email: "park.hyp@bgu.local",
-    display_name: "박협동",
-    mbti: "ISFJ",
-    favorite_genres: ["협력", "스토리"],
-    favorite_game_types: ["가족/캐주얼"],
-    bio: "분위기 맞추는 거 좋아해요. 초보랑 같이 플레이 자주 해요.",
-    ruleSeed: 33,
-  },
-  {
-    email: "choi.un@bgu.local",
-    display_name: "최운",
-    mbti: "ENTP",
-    favorite_genres: ["베팅", "협력/배신"],
-    favorite_game_types: ["짧게 여러 판"],
-    bio: "운 좋은 날엔 주사위 게임도 환영.",
-    ruleSeed: 44,
-  },
-  {
-    email: "han.card@bgu.local",
-    display_name: "한카드",
-    mbti: "ENFJ",
-    favorite_genres: ["카드", "덱빌딩"],
-    favorite_game_types: ["중간 길이", "확장 이야기"],
-    bio: "덱 구성 맛집. 카드 게임이면 일단 좋아요.",
-    ruleSeed: 55,
-  },
-  {
-    email: "jung.deck@bgu.local",
-    display_name: "정덱빌",
-    mbti: "ISTP",
-    favorite_genres: ["엔진 빌딩", "전략"],
-    favorite_game_types: ["손맛", "한 판 길게"],
-    bio: "조용히 테이블 정리하는 타입. 룰 질문은 편하게.",
-    ruleSeed: 66,
-  },
-  {
-    email: "seo.party@bgu.local",
-    display_name: "서파티",
-    mbti: "ESFP",
-    favorite_genres: ["파티", "술게임"],
-    favorite_game_types: ["시끌벅적", "짧게 여러 판"],
-    bio: "분위기 메이커. 웃기면 성공이에요.",
-    ruleSeed: 77,
-  },
-  {
-    email: "yoon.betray@bgu.local",
-    display_name: "윤배신",
-    mbti: "ENTJ",
-    favorite_genres: ["협력/배신", "블러핑"],
-    favorite_game_types: ["심리전", "밤샘"],
-    bio: "배신 게임은 제가 설명할게요. (믿거나 말거나)",
-    ruleSeed: 88,
-  },
-  {
-    email: "kang.intro@bgu.local",
-    display_name: "강입문",
-    mbti: "INFP",
-    favorite_genres: ["가족", "카드"],
-    favorite_game_types: ["천천히", "분위기"],
-    bio: "처음 오신 분 옆에 앉는 게 편해요.",
-    ruleSeed: 99,
-  },
-  {
-    email: "min.mini@bgu.local",
-    display_name: "민미니",
-    mbti: "ISFP",
-    favorite_genres: ["퍼즐", "미니"],
-    favorite_game_types: ["30분 안팎", "귀여운 테마"],
-    bio: "짧고 귀여운 거 좋아해요. 룰은 천천히 읽어요.",
-    ruleSeed: 101,
-  },
 ];
 
-/** 김하늘 제외 시드 회원 display_name — games added_by 랜덤 배정 풀 */
-export const SEED_ADDED_BY_DISPLAY_NAMES = SEED_MEMBER_PROFILES.filter(
-  (p) => p.email !== "kim.haneul@bgu.local",
-).map((p) => p.display_name);
+/**
+ * games `added_by`를 김하늘로 두지 않는 예외 (이름 정확히 일치, 앞뒤 공백 무시).
+ * 해당 행은 시드 시 added_by 를 null 로 두고, 운영에서 직접 지정할 수 있습니다.
+ */
+export const GAME_ADDED_BY_EXCLUDE_KIM_NAME = "딥씨 크루";
+
+export function isGameAddedByExcludedFromKim(name) {
+  return String(name ?? "").trim() === GAME_ADDED_BY_EXCLUDE_KIM_NAME;
+}
 
 /**
  * @param {string[]} gameNames — games.json 의 name 목록

@@ -1,9 +1,9 @@
 /**
  * games.json → Supabase games 테이블 전체 교체
- * added_by: 김하늘 제외 시드 회원에게 결정적 랜덤 (seed-supabase.mjs / games:sql 과 동일)
+ * added_by: 기본 김하늘, 이름이 「딥씨 크루」인 행만 null (seed-supabase.mjs 와 동일)
  *
  * 필요: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
- * 전제: pnpm seed 로 시드 회원(auth + profiles)이 이미 있어야 함
+ * 전제: 김하늘 프로필이 있어야 함
  *
  * 실행: pnpm sync-games
  */
@@ -12,7 +12,7 @@ import dotenv from "dotenv";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { mulberry32, SEED_MEMBER_PROFILES } from "./seed-members-data.mjs";
+import { isGameAddedByExcludedFromKim } from "./seed-members-data.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
@@ -33,10 +33,6 @@ if (!url || !serviceKey) {
 const supabase = createClient(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
-
-const NON_KIM_MEMBERS = SEED_MEMBER_PROFILES.filter(
-  (p) => p.email !== "kim.haneul@bgu.local",
-);
 
 function minPlayersFromJson(g) {
   if (g.minPlayers == null || g.minPlayers === "") return null;
@@ -85,28 +81,13 @@ async function findUserIdByEmail(email) {
   return null;
 }
 
-async function resolveNonKimUserIds() {
-  const ids = [];
-  for (const p of NON_KIM_MEMBERS) {
-    const id = await findUserIdByEmail(p.email);
-    if (!id) {
-      throw new Error(
-        `시드 계정 없음: ${p.email}. 먼저 pnpm seed 를 실행하세요.`,
-      );
-    }
-    ids.push(id);
-  }
-  return ids;
-}
-
-function addedByIdForGameIndex(i, nonKimIds) {
-  const next = mulberry32((i * 0x9e3779b9 + 0xbeef) >>> 0);
-  const idx = Math.floor(next() * nonKimIds.length);
-  return nonKimIds[idx];
-}
-
 async function main() {
-  const nonKimIds = await resolveNonKimUserIds();
+  const kimId = await findUserIdByEmail("kim.haneul@bgu.local");
+  if (!kimId) {
+    throw new Error(
+      "김하늘(kim.haneul@bgu.local) 계정이 없습니다. 먼저 pnpm seed 를 실행하세요.",
+    );
+  }
 
   const gamesPath = path.join(root, "src/data/games.json");
   if (!fs.existsSync(gamesPath)) {
@@ -115,12 +96,15 @@ async function main() {
   }
 
   const games = JSON.parse(fs.readFileSync(gamesPath, "utf8"));
-  const rows = games.map((g, i) =>
-    mapJsonGame(g, addedByIdForGameIndex(i, nonKimIds)),
+  const rows = games.map((g) =>
+    mapJsonGame(
+      g,
+      isGameAddedByExcludedFromKim(g.name) ? null : kimId,
+    ),
   );
 
   console.log(
-    `games 테이블 비우기 후 ${rows.length}건 삽입 (추가자: 김하늘 제외 ${nonKimIds.length}명 중 랜덤)…`,
+    `games 테이블 비우기 후 ${rows.length}건 삽입 (추가자: 김하늘, 딥씨 크루만 null)…`,
   );
 
   const { error: delErr } = await supabase
