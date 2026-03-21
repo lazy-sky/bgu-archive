@@ -1,12 +1,13 @@
 "use client";
 
 import { useAuth, useSupabase } from "@/components/auth-provider";
+import { fetchGames } from "@/lib/games-api";
 import { fetchProfile } from "@/lib/profile-api";
 import { joinCommaList, splitCommaList } from "@/lib/parse-comma-list";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export function ProfileForm() {
   const { session, loading: authLoading } = useAuth();
@@ -19,7 +20,10 @@ export function ProfileForm() {
   const [bio, setBio] = useState("");
   const [favoriteGenres, setFavoriteGenres] = useState("");
   const [favoriteGameTypes, setFavoriteGameTypes] = useState("");
-  const [ruleMasterGames, setRuleMasterGames] = useState("");
+  const [ruleMasterSelected, setRuleMasterSelected] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [ruleGameFilter, setRuleGameFilter] = useState("");
   const [saved, setSaved] = useState(false);
 
   const userId = session?.user.id;
@@ -33,6 +37,37 @@ export function ProfileForm() {
     enabled: !!supabase && !!userId,
   });
 
+  const { data: games = [], isPending: gamesLoading } = useQuery({
+    queryKey: ["games"],
+    queryFn: () => {
+      if (!supabase) throw new Error("데이터를 불러올 수 없습니다.");
+      return fetchGames(supabase);
+    },
+    enabled: !!supabase && !!session,
+    staleTime: 30 * 1000,
+  });
+
+  const orphanedRuleNames = useMemo(() => {
+    if (!profile) return [];
+    const names = games.map((g) => g.name);
+    return profile.rule_master_games.filter(
+      (nm) => !names.some((n) => n === nm.trim()),
+    );
+  }, [profile, games]);
+
+  const profileRuleSig = useMemo(
+    () => (profile ? profile.rule_master_games.join("|") : ""),
+    [profile],
+  );
+  const gameNamesSig = useMemo(
+    () =>
+      games
+        .map((g) => g.name)
+        .sort((a, b) => a.localeCompare(b, "ko"))
+        .join("\0"),
+    [games],
+  );
+
   useEffect(() => {
     if (!profile) return;
     setDisplayName(profile.display_name);
@@ -40,14 +75,32 @@ export function ProfileForm() {
     setBio(profile.bio);
     setFavoriteGenres(joinCommaList(profile.favorite_genres));
     setFavoriteGameTypes(joinCommaList(profile.favorite_game_types));
-    setRuleMasterGames(joinCommaList(profile.rule_master_games));
   }, [profile]);
+
+  useEffect(() => {
+    if (!profile || gamesLoading) return;
+    const next = new Set<string>();
+    for (const nm of profile.rule_master_games) {
+      const t = nm.trim();
+      if (games.some((g) => g.name === t)) next.add(t);
+    }
+    setRuleMasterSelected(next);
+  }, [profile, profileRuleSig, gamesLoading, gameNamesSig]);
+
+  const filteredGames = useMemo(() => {
+    const q = ruleGameFilter.trim().toLowerCase();
+    if (!q) return games;
+    return games.filter((g) => g.name.toLowerCase().includes(q));
+  }, [games, ruleGameFilter]);
 
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (!supabase || !userId) throw new Error("로그인 필요");
       const trimmedName = displayName.trim();
       if (!trimmedName) throw new Error("표시 이름을 입력해 주세요.");
+      const ruleList = [...ruleMasterSelected].sort((a, b) =>
+        a.localeCompare(b, "ko"),
+      );
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -56,7 +109,7 @@ export function ProfileForm() {
           bio: bio.trim(),
           favorite_genres: splitCommaList(favoriteGenres),
           favorite_game_types: splitCommaList(favoriteGameTypes),
-          rule_master_games: splitCommaList(ruleMasterGames),
+          rule_master_games: ruleList,
         })
         .eq("id", userId);
       if (error) throw error;
@@ -68,6 +121,15 @@ export function ProfileForm() {
       setTimeout(() => setSaved(false), 3000);
     },
   });
+
+  function toggleRuleGame(name: string) {
+    setRuleMasterSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }
 
   if (!supabase) {
     return (
@@ -193,23 +255,68 @@ export function ProfileForm() {
         />
       </div>
 
-      <div>
-        <label htmlFor="rule_master_games" className={labelClass}>
-          룰마스터 가능한 게임
-        </label>
+      <fieldset className="min-w-0">
+        <legend className={`${labelClass} px-0`}>룰마스터 가능한 게임</legend>
         <p className="mt-1 text-xs text-amber-800/75">
-          설명할 수 있는 게임 이름을 쉼표로 적어 주세요. 게임 목록의 이름과 맞추면
-          추천에 반영됩니다.
+          게임 목록에서 설명할 수 있는 게임을 고릅니다. 게임 추천·목록의
+          룰마스터 표시에 쓰입니다.
         </p>
-        <textarea
-          id="rule_master_games"
-          value={ruleMasterGames}
-          onChange={(e) => setRuleMasterGames(e.target.value)}
-          rows={3}
-          placeholder="예: 더 마인드, 라스베가스, 달무티"
-          className={inputClass}
+        {orphanedRuleNames.length > 0 && (
+          <p className="mt-2 text-xs text-amber-800/80">
+            아래는 예전에 저장됐지만 현재 목록에 없는 이름입니다. 저장하면
+            제외됩니다: {orphanedRuleNames.join(", ")}
+          </p>
+        )}
+        <input
+          type="search"
+          value={ruleGameFilter}
+          onChange={(e) => setRuleGameFilter(e.target.value)}
+          placeholder="게임 이름 검색…"
+          className={`${inputClass} mt-2`}
+          aria-label="룰마스터 게임 검색"
         />
-      </div>
+        {gamesLoading ? (
+          <p className="mt-3 text-sm text-amber-900/70">게임 목록 불러오는 중…</p>
+        ) : games.length === 0 ? (
+          <p className="mt-3 text-sm text-amber-800/80">
+            등록된 게임이 없습니다.{" "}
+            <Link href="/games/new" className="font-medium text-amber-900 underline">
+              게임 추가
+            </Link>
+            후 선택할 수 있어요.
+          </p>
+        ) : (
+          <div className="mt-2 max-h-72 overflow-y-auto rounded-lg border border-amber-900/15 bg-white/90 p-2">
+            <ul className="space-y-1" role="list">
+              {filteredGames.map((g) => {
+                const checked = ruleMasterSelected.has(g.name);
+                return (
+                  <li key={g.id}>
+                    <label className="flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-sm text-amber-950 hover:bg-amber-50/80 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-amber-400/40">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleRuleGame(g.name)}
+                        className="mt-0.5 shrink-0 rounded border-amber-900/30"
+                      />
+                      <span className="leading-snug">{g.name}</span>
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+            {filteredGames.length === 0 && (
+              <p className="px-2 py-3 text-center text-sm text-amber-800/70">
+                검색 결과가 없습니다.
+              </p>
+            )}
+          </div>
+        )}
+        <p className="mt-2 text-xs tabular-nums text-amber-900/55">
+          선택 {ruleMasterSelected.size}개
+          {ruleGameFilter.trim() ? ` · 표시 ${filteredGames.length}개` : ""}
+        </p>
+      </fieldset>
 
       {updateMutation.isError && (
         <p className="text-sm text-red-700" role="alert">
@@ -227,7 +334,9 @@ export function ProfileForm() {
       <div className="flex flex-wrap gap-3">
         <button
           type="submit"
-          disabled={profileLoading || updateMutation.isPending}
+          disabled={
+            profileLoading || gamesLoading || updateMutation.isPending
+          }
           className="rounded-full bg-amber-900 px-5 py-2 text-sm font-medium text-amber-50 hover:bg-amber-800 disabled:opacity-60"
         >
           {updateMutation.isPending ? "저장 중…" : "저장"}
