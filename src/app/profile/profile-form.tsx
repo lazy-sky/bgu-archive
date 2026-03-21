@@ -1,9 +1,9 @@
 "use client";
 
 import { useAuth, useSupabase } from "@/components/auth-provider";
-import { fetchGames } from "@/lib/games-api";
+import { fetchGames, getGameGenres } from "@/lib/games-api";
+import { PLAY_STYLE_OPTIONS } from "@/lib/profile-picklists";
 import { fetchProfile } from "@/lib/profile-api";
-import { joinCommaList, splitCommaList } from "@/lib/parse-comma-list";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,8 +18,14 @@ export function ProfileForm() {
   const [displayName, setDisplayName] = useState("");
   const [mbti, setMbti] = useState("");
   const [bio, setBio] = useState("");
-  const [favoriteGenres, setFavoriteGenres] = useState("");
-  const [favoriteGameTypes, setFavoriteGameTypes] = useState("");
+  const [genreSelected, setGenreSelected] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [genreFilter, setGenreFilter] = useState("");
+  const [playStyleSelected, setPlayStyleSelected] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [playStyleFilter, setPlayStyleFilter] = useState("");
   const [ruleMasterSelected, setRuleMasterSelected] = useState<Set<string>>(
     () => new Set(),
   );
@@ -55,6 +61,20 @@ export function ProfileForm() {
     );
   }, [profile, games]);
 
+  const genreOptions = useMemo(() => getGameGenres(games), [games]);
+
+  const orphanedGenreNames = useMemo(() => {
+    if (!profile) return [];
+    const opts = new Set(genreOptions);
+    return profile.favorite_genres.filter((nm) => !opts.has(nm.trim()));
+  }, [profile, genreOptions]);
+
+  const orphanedPlayStyleNames = useMemo(() => {
+    if (!profile) return [];
+    const opts = new Set(PLAY_STYLE_OPTIONS);
+    return profile.favorite_game_types.filter((nm) => !opts.has(nm.trim()));
+  }, [profile]);
+
   const profileRuleSig = useMemo(
     () => (profile ? profile.rule_master_games.join("|") : ""),
     [profile],
@@ -68,14 +88,45 @@ export function ProfileForm() {
     [games],
   );
 
+  const profileGenreSig = useMemo(
+    () => (profile ? profile.favorite_genres.join("|") : ""),
+    [profile],
+  );
+  const genreOptionsSig = useMemo(() => genreOptions.join("\0"), [genreOptions]);
+
+  const profilePlayStyleSig = useMemo(
+    () => (profile ? profile.favorite_game_types.join("|") : ""),
+    [profile],
+  );
+
   useEffect(() => {
     if (!profile) return;
     setDisplayName(profile.display_name);
     setMbti(profile.mbti);
     setBio(profile.bio);
-    setFavoriteGenres(joinCommaList(profile.favorite_genres));
-    setFavoriteGameTypes(joinCommaList(profile.favorite_game_types));
   }, [profile]);
+
+  useEffect(() => {
+    if (!profile || gamesLoading) return;
+    const opts = new Set(genreOptions);
+    const next = new Set<string>();
+    for (const nm of profile.favorite_genres) {
+      const t = nm.trim();
+      if (opts.has(t)) next.add(t);
+    }
+    setGenreSelected(next);
+  }, [profile, profileGenreSig, gamesLoading, genreOptionsSig]);
+
+  useEffect(() => {
+    if (!profile) return;
+    const opts = new Set(PLAY_STYLE_OPTIONS);
+    const next = new Set<string>();
+    for (const nm of profile.favorite_game_types) {
+      const t = nm.trim();
+      if (opts.has(t)) next.add(t);
+    }
+    setPlayStyleSelected(next);
+  }, [profile, profilePlayStyleSig]);
 
   useEffect(() => {
     if (!profile || gamesLoading) return;
@@ -93,6 +144,18 @@ export function ProfileForm() {
     return games.filter((g) => g.name.toLowerCase().includes(q));
   }, [games, ruleGameFilter]);
 
+  const filteredGenres = useMemo(() => {
+    const q = genreFilter.trim().toLowerCase();
+    if (!q) return genreOptions;
+    return genreOptions.filter((g) => g.toLowerCase().includes(q));
+  }, [genreOptions, genreFilter]);
+
+  const filteredPlayStyles = useMemo(() => {
+    const q = playStyleFilter.trim().toLowerCase();
+    if (!q) return [...PLAY_STYLE_OPTIONS];
+    return PLAY_STYLE_OPTIONS.filter((p) => p.toLowerCase().includes(q));
+  }, [playStyleFilter]);
+
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (!supabase || !userId) throw new Error("로그인 필요");
@@ -101,14 +164,20 @@ export function ProfileForm() {
       const ruleList = [...ruleMasterSelected].sort((a, b) =>
         a.localeCompare(b, "ko"),
       );
+      const genreList = [...genreSelected].sort((a, b) =>
+        a.localeCompare(b, "ko"),
+      );
+      const playList = [...playStyleSelected].sort((a, b) =>
+        a.localeCompare(b, "ko"),
+      );
       const { error } = await supabase
         .from("profiles")
         .update({
           display_name: trimmedName,
           mbti: mbti.trim(),
           bio: bio.trim(),
-          favorite_genres: splitCommaList(favoriteGenres),
-          favorite_game_types: splitCommaList(favoriteGameTypes),
+          favorite_genres: genreList,
+          favorite_game_types: playList,
           rule_master_games: ruleList,
         })
         .eq("id", userId);
@@ -124,6 +193,24 @@ export function ProfileForm() {
 
   function toggleRuleGame(name: string) {
     setRuleMasterSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }
+
+  function toggleGenre(name: string) {
+    setGenreSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }
+
+  function togglePlayStyle(name: string) {
+    setPlayStyleSelected((prev) => {
       const next = new Set(prev);
       if (next.has(name)) next.delete(name);
       else next.add(name);
@@ -221,39 +308,120 @@ export function ProfileForm() {
         />
       </div>
 
-      <div>
-        <label htmlFor="favorite_genres" className={labelClass}>
-          선호 장르
-        </label>
+      <fieldset className="min-w-0">
+        <legend className={`${labelClass} px-0`}>선호 장르</legend>
         <p className="mt-1 text-xs text-amber-800/75">
-          쉼표로 구분해 주세요. (회원 목록에 그대로 표시됩니다)
+          현재 게임 목록에 등록된 장르 중에서 고릅니다. (회원 목록에 그대로
+          표시됩니다)
         </p>
+        {orphanedGenreNames.length > 0 && (
+          <p className="mt-2 text-xs text-amber-800/80">
+            아래는 예전에 저장됐지만 현재 목록에 없는 항목입니다. 저장하면
+            제외됩니다: {orphanedGenreNames.join(", ")}
+          </p>
+        )}
         <input
-          id="favorite_genres"
-          type="text"
-          value={favoriteGenres}
-          onChange={(e) => setFavoriteGenres(e.target.value)}
-          placeholder="예: 파티, 블러핑, 카드"
-          className={inputClass}
+          type="search"
+          value={genreFilter}
+          onChange={(e) => setGenreFilter(e.target.value)}
+          placeholder="장르 검색…"
+          className={`${inputClass} mt-2`}
+          aria-label="선호 장르 검색"
         />
-      </div>
+        {gamesLoading ? (
+          <p className="mt-3 text-sm text-amber-900/70">게임 목록 불러오는 중…</p>
+        ) : genreOptions.length === 0 ? (
+          <p className="mt-3 text-sm text-amber-800/80">
+            등록된 게임의 장르가 없습니다.{" "}
+            <Link href="/games/new" className="font-medium text-amber-900 underline">
+              게임 추가
+            </Link>
+            시 장르를 넣어 주시면 여기서 선택할 수 있어요.
+          </p>
+        ) : (
+          <div className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-amber-900/15 bg-white/90 p-2">
+            <ul className="space-y-1" role="list">
+              {filteredGenres.map((name) => {
+                const checked = genreSelected.has(name);
+                return (
+                  <li key={name}>
+                    <label className="flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-sm text-amber-950 hover:bg-amber-50/80 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-amber-400/40">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleGenre(name)}
+                        className="mt-0.5 shrink-0 rounded border-amber-900/30"
+                      />
+                      <span className="leading-snug">{name}</span>
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+            {filteredGenres.length === 0 && (
+              <p className="px-2 py-3 text-center text-sm text-amber-800/70">
+                검색 결과가 없습니다.
+              </p>
+            )}
+          </div>
+        )}
+        <p className="mt-2 text-xs tabular-nums text-amber-900/55">
+          선택 {genreSelected.size}개
+          {genreFilter.trim() ? ` · 표시 ${filteredGenres.length}개` : ""}
+        </p>
+      </fieldset>
 
-      <div>
-        <label htmlFor="favorite_game_types" className={labelClass}>
-          플레이 스타일
-        </label>
+      <fieldset className="min-w-0">
+        <legend className={`${labelClass} px-0`}>플레이 스타일</legend>
         <p className="mt-1 text-xs text-amber-800/75">
-          쉼표로 구분해 주세요.
+          자주 플레이하는 분위기·길이 등을 고릅니다.
         </p>
+        {orphanedPlayStyleNames.length > 0 && (
+          <p className="mt-2 text-xs text-amber-800/80">
+            아래는 예전에 저장됐지만 현재 선택지에 없는 항목입니다. 저장하면
+            제외됩니다: {orphanedPlayStyleNames.join(", ")}
+          </p>
+        )}
         <input
-          id="favorite_game_types"
-          type="text"
-          value={favoriteGameTypes}
-          onChange={(e) => setFavoriteGameTypes(e.target.value)}
-          placeholder="예: 단시간, 웃음 위주"
-          className={inputClass}
+          type="search"
+          value={playStyleFilter}
+          onChange={(e) => setPlayStyleFilter(e.target.value)}
+          placeholder="플레이 스타일 검색…"
+          className={`${inputClass} mt-2`}
+          aria-label="플레이 스타일 검색"
         />
-      </div>
+        <div className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-amber-900/15 bg-white/90 p-2">
+          <ul className="space-y-1" role="list">
+            {filteredPlayStyles.map((name) => {
+              const checked = playStyleSelected.has(name);
+              return (
+                <li key={name}>
+                  <label className="flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-sm text-amber-950 hover:bg-amber-50/80 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-amber-400/40">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => togglePlayStyle(name)}
+                      className="mt-0.5 shrink-0 rounded border-amber-900/30"
+                    />
+                    <span className="leading-snug">{name}</span>
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
+          {filteredPlayStyles.length === 0 && (
+            <p className="px-2 py-3 text-center text-sm text-amber-800/70">
+              검색 결과가 없습니다.
+            </p>
+          )}
+        </div>
+        <p className="mt-2 text-xs tabular-nums text-amber-900/55">
+          선택 {playStyleSelected.size}개
+          {playStyleFilter.trim()
+            ? ` · 표시 ${filteredPlayStyles.length}개`
+            : ""}
+        </p>
+      </fieldset>
 
       <fieldset className="min-w-0">
         <legend className={`${labelClass} px-0`}>룰마스터 가능한 게임</legend>
