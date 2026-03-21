@@ -1,6 +1,5 @@
 "use client";
 
-import { GameRecommendPanel } from "@/components/game-recommend-panel";
 import { useAuth, useSupabase } from "@/components/auth-provider";
 import { fetchGames, getGameGenres } from "@/lib/games-api";
 import { fetchProfile } from "@/lib/profile-api";
@@ -101,11 +100,19 @@ export function GamesClient() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-amber-900/60">
-          {isPending || membersPending
-            ? "불러오는 중…"
-            : `${filtered.length} / ${games.length}개 표시`}
-        </p>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <p className="text-sm text-amber-900/60">
+            {isPending || membersPending
+              ? "불러오는 중…"
+              : `${filtered.length} / ${games.length}개 표시`}
+          </p>
+          <Link
+            href="/games/recommend"
+            className="text-sm font-medium text-violet-800 underline decoration-violet-800/40 underline-offset-2 hover:text-violet-950"
+          >
+            게임 추천
+          </Link>
+        </div>
         {session ? (
           <Link
             href="/games/new"
@@ -180,14 +187,6 @@ export function GamesClient() {
           </label>
         </div>
       </div>
-
-      {games.length > 0 ? (
-        <GameRecommendPanel
-          games={games}
-          members={members}
-          ruleMastersByGame={ruleMastersByGame}
-        />
-      ) : null}
 
       <ul className="space-y-3 md:hidden" role="list">
         {filtered.map((g, rowIndex) => {

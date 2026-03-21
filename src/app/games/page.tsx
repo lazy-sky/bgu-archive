@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { GamesClient } from "./games-client";
 
 export const metadata: Metadata = {
@@ -14,9 +15,12 @@ export default function GamesPage() {
           게임 목록
         </h1>
         <p className="mt-1 text-sm leading-relaxed text-amber-900/65">
-          프로필에 등록된 룰마스터 가능 게임을 기준으로 &quot;룰마스터 가능&quot;과
-          아래 추천을 보여 줍니다. 인원·함께 할 사람을 고르면 맞는 게임만 골라
-          볼 수 있어요.
+          검색·장르·난이도로 전체 보드게임을 찾습니다. 인원·룰마스터 조건으로
+          골라 보기는{" "}
+          <Link href="/games/recommend" className="font-medium text-amber-900 underline">
+            게임 추천
+          </Link>
+          페이지를 이용하세요.
         </p>
       </div>
       <GamesClient />

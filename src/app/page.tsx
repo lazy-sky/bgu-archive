@@ -18,6 +18,12 @@ export default function Home() {
           게임 목록 보기
         </Link>
         <Link
+          href="/games/recommend"
+          className="inline-flex items-center justify-center rounded-full border border-violet-300/80 bg-violet-50/40 px-6 py-2.5 text-sm font-medium text-violet-950 transition hover:bg-violet-100/60"
+        >
+          게임 추천
+        </Link>
+        <Link
           href="/members"
           className="inline-flex items-center justify-center rounded-full border border-amber-900/20 bg-white/70 px-6 py-2.5 text-sm font-medium text-amber-950 transition hover:bg-amber-50"
         >

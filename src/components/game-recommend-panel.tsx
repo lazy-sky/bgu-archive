@@ -265,8 +265,8 @@ export function GameRecommendPanel({
           )}
           {recommended.length > 80 && (
             <p className="border-t border-amber-900/10 px-3 py-2 text-xs text-amber-800/70">
-              상위 80개만 표시했습니다. 목록을 줄이려면 아래 표에서 장르·난이도로
-              걸러 보세요.
+              상위 80개만 표시했습니다. 목록을 줄이려면 게임 목록 페이지에서
+              장르·난이도로 걸러 보세요.
             </p>
           )}
         </div>
