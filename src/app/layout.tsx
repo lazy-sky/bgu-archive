@@ -14,12 +14,53 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+function metadataBase(): URL {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicit) {
+    try {
+      return new URL(explicit);
+    } catch {
+      /* fall through */
+    }
+  }
+  if (process.env.VERCEL_URL) {
+    return new URL(`https://${process.env.VERCEL_URL}`);
+  }
+  return new URL("http://localhost:3000");
+}
+
+const siteDescription =
+  "BoardGameUnion(BGU) 동아리의 보드게임 목록, 룰마스터, 추천을 한곳에서.";
+
 export const metadata: Metadata = {
+  metadataBase: metadataBase(),
   title: {
     default: "BGU Archive",
     template: "%s | BGU Archive",
   },
-  description: "BoardGameUnion 보드게임 아카이브",
+  description: siteDescription,
+  keywords: [
+    "보드게임",
+    "동아리",
+    "BGU",
+    "BoardGameUnion",
+    "보드게임유니온",
+  ],
+  openGraph: {
+    title: "BGU Archive",
+    description: siteDescription,
+    siteName: "BGU Archive",
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BGU Archive",
+    description: siteDescription,
+  },
+  appleWebApp: {
+    title: "BGU Archive",
+  },
 };
 
 export default function RootLayout({
