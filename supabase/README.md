@@ -4,7 +4,7 @@
 
 **파일:** [`migrations/20250321000000_init.sql`](./migrations/20250321000000_init.sql)
 
-이후 컬럼 추가 마이그레이션도 순서대로 실행하세요. 특히 `games.min_players`는 [`20250321000003_min_players.sql`](./migrations/20250321000003_min_players.sql) 또는 통합 정리용 [`20250321000004_games_min_players_fix.sql`](./migrations/20250321000004_games_min_players_fix.sql)를 적용합니다.
+이후 컬럼 추가 마이그레이션도 순서대로 실행하세요. 특히 `games.min_players`는 [`20250321000003_min_players.sql`](./migrations/20250321000003_min_players.sql) 또는 통합 정리용 [`20250321000004_games_min_players_fix.sql`](./migrations/20250321000004_games_min_players_fix.sql)를 적용합니다. 프로필 아바타는 [`20250321000007_avatar_config.sql`](./migrations/20250321000007_avatar_config.sql)로 `profiles.avatar_config`(JSON)를 추가합니다.
 
 ### `min_player` / `min_players` / schema cache 오류
 

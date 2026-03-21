@@ -17,6 +17,8 @@
     "seed:delete-dummies": "node scripts/delete-dummy-seed-users.mjs"
   },
   "dependencies": {
+    "@dicebear/core": "^9.4.2",
+    "@dicebear/lorelei": "^9.4.2",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.99.3",
     "@tanstack/react-query": "^5.91.3",
@@ -29,10 +31,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
     "dotenv": "^16.4.7",
-    "pg": "^8.14.1",
+    "eslint": "^9",
     "eslint-config-next": "16.2.1",
+    "pg": "^8.14.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "xlsx": "^0.18.5"

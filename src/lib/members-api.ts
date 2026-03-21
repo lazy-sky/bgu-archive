@@ -1,3 +1,4 @@
+import { parseAvatarConfig } from "@/lib/avatar-config";
 import type { Member } from "@/types/member";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -9,6 +10,7 @@ type ProfileRow = {
   favorite_game_types: string[];
   bio: string;
   rule_master_games: string[];
+  avatar_config?: unknown;
 };
 
 export async function fetchMembers(supabase: SupabaseClient): Promise<Member[]> {
@@ -27,5 +29,6 @@ export async function fetchMembers(supabase: SupabaseClient): Promise<Member[]> 
     favoriteGameTypes: row.favorite_game_types ?? [],
     bio: row.bio,
     ruleMasterGames: row.rule_master_games ?? [],
+    avatarConfig: parseAvatarConfig(row.avatar_config),
   }));
 }

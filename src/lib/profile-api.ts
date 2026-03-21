@@ -1,3 +1,5 @@
+import { parseAvatarConfig } from "@/lib/avatar-config";
+import type { AvatarConfig } from "@/types/avatar";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type ProfileRow = {
@@ -8,6 +10,7 @@ export type ProfileRow = {
   favorite_game_types: string[];
   bio: string;
   rule_master_games: string[];
+  avatarConfig: AvatarConfig;
 };
 
 export async function fetchProfile(
@@ -17,7 +20,7 @@ export async function fetchProfile(
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "display_name, is_admin, mbti, favorite_genres, favorite_game_types, bio, rule_master_games",
+      "display_name, is_admin, mbti, favorite_genres, favorite_game_types, bio, rule_master_games, avatar_config",
     )
     .eq("id", userId)
     .maybeSingle();
@@ -33,5 +36,8 @@ export async function fetchProfile(
     favorite_game_types: data.favorite_game_types ?? [],
     bio: data.bio ?? "",
     rule_master_games: data.rule_master_games ?? [],
+    avatarConfig: parseAvatarConfig(
+      (data as { avatar_config?: unknown }).avatar_config,
+    ),
   };
 }

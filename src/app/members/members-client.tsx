@@ -1,5 +1,6 @@
 "use client";
 
+import { MemberAvatar } from "@/components/member-avatar";
 import { RuleMasterCollapsible } from "@/components/rule-master-collapsible";
 import { useSupabase } from "@/components/auth-provider";
 import { fetchMembers } from "@/lib/members-api";
@@ -46,10 +47,18 @@ export function MembersClient() {
           className="min-w-0 rounded-xl border border-amber-900/10 bg-white/80 p-4 shadow-sm sm:p-5"
         >
           <div className="flex min-w-0 items-start justify-between gap-2">
-            <h2 className="min-w-0 flex-1 text-base font-semibold text-amber-950 sm:text-lg">
-              {m.displayName}
-            </h2>
-            <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900">
+            <div className="flex min-w-0 flex-1 items-start gap-3">
+              <MemberAvatar
+                config={m.avatarConfig}
+                size={56}
+                seedFallback={m.id}
+                className="mt-0.5 ring-amber-900/10"
+              />
+              <h2 className="min-w-0 flex-1 text-base font-semibold text-amber-950 sm:text-lg">
+                {m.displayName}
+              </h2>
+            </div>
+            <span className="shrink-0 rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900">
               {m.mbti}
             </span>
           </div>

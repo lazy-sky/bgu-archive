@@ -5,6 +5,7 @@ BoardGameUnion(BGU) 동아리용 보드게임 아카이브 웹앱.
 - **게임 / 회원**: Supabase (`games`, `profiles`)
 - **로컬 백업용 JSON**: `src/data/games.json` (엑셀 `pnpm import-games`로 갱신 가능)
 - **스택**: Next.js, Tailwind, TanStack Query, Supabase Auth + `@supabase/ssr`
+- **아바타**: [DiceBear](https://www.dicebear.com/) Lorelei 스타일 ([CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/), Lisa Wischofsky)
 - **패키지 매니저**: [pnpm](https://pnpm.io) (`packageManager` 필드 참고)
 
 ## 개발

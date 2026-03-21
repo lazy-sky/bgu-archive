@@ -1,3 +1,5 @@
+import type { AvatarConfig } from "@/types/avatar";
+
 export type Member = {
   id: string;
   displayName: string;
@@ -7,4 +9,5 @@ export type Member = {
   bio: string;
   /** 룰 설명 가능한 게임 */
   ruleMasterGames: string[];
+  avatarConfig: AvatarConfig;
 };

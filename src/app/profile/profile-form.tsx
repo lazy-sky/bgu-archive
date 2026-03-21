@@ -3,7 +3,10 @@
 import { useAuth, useSupabase } from "@/components/auth-provider";
 import { fetchGames, getGameGenres } from "@/lib/games-api";
 import { PLAY_STYLE_OPTIONS } from "@/lib/profile-picklists";
+import { AvatarEditor } from "@/components/avatar-editor";
+import { avatarConfigForSave, DEFAULT_AVATAR } from "@/lib/avatar-config";
 import { fetchProfile } from "@/lib/profile-api";
+import type { AvatarConfig } from "@/types/avatar";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -31,6 +34,9 @@ export function ProfileForm() {
   );
   const [ruleGameFilter, setRuleGameFilter] = useState("");
   const [saved, setSaved] = useState(false);
+  const [avatarSaved, setAvatarSaved] = useState(false);
+  const [avatarConfig, setAvatarConfig] =
+    useState<AvatarConfig>(DEFAULT_AVATAR);
 
   const userId = session?.user.id;
 
@@ -104,6 +110,7 @@ export function ProfileForm() {
     setDisplayName(profile.display_name);
     setMbti(profile.mbti);
     setBio(profile.bio);
+    setAvatarConfig(avatarConfigForSave(profile.avatarConfig));
   }, [profile]);
 
   useEffect(() => {
@@ -179,6 +186,7 @@ export function ProfileForm() {
           favorite_genres: genreList,
           favorite_game_types: playList,
           rule_master_games: ruleList,
+          avatar_config: avatarConfigForSave(avatarConfig),
         })
         .eq("id", userId);
       if (error) throw error;
@@ -188,6 +196,23 @@ export function ProfileForm() {
       queryClient.invalidateQueries({ queryKey: ["profile", userId] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
       setTimeout(() => setSaved(false), 3000);
+    },
+  });
+
+  const saveAvatarMutation = useMutation({
+    mutationFn: async () => {
+      if (!supabase || !userId) throw new Error("로그인 필요");
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_config: avatarConfigForSave(avatarConfig) })
+        .eq("id", userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setAvatarSaved(true);
+      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      setTimeout(() => setAvatarSaved(false), 3000);
     },
   });
 
@@ -278,6 +303,19 @@ export function ProfileForm() {
           className={inputClass}
         />
       </div>
+
+      <AvatarEditor
+        value={avatarConfig}
+        onChange={setAvatarConfig}
+        seedFallback={userId}
+        onSaveAvatar={() => {
+          setAvatarSaved(false);
+          saveAvatarMutation.mutate();
+        }}
+        saveAvatarPending={saveAvatarMutation.isPending}
+        saveAvatarError={saveAvatarMutation.error}
+        saveAvatarSuccess={avatarSaved}
+      />
 
       <div>
         <label htmlFor="mbti" className={labelClass}>
