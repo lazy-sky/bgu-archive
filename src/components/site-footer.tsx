@@ -55,7 +55,7 @@ export async function SiteFooter() {
             © {year} BGU Archive. 김하늘 from BGU.
           </p>
           <p className="leading-relaxed text-amber-800/60">
-            Avatart with BGU Archive(MIT License)
+            Avatar with Dicebear(MIT License)
           </p>
         </div>
       </div>

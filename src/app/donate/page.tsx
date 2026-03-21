@@ -62,12 +62,12 @@ export default function DonatePage() {
           후원하기
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-amber-900/70">
-          사이트를 유지보수하는데 비용이 조금 듭니다. BGU Archive가 안정적으로 운영될 수 있도록 도와주세요. 감사합니다.
+          사이트를 유지·보수하는데 비용이 듭니다. BGU Archive가 안정적으로 운영될 수 있도록 도와주세요. 감사합니다.
         </p>
 
         <p className="mt-6 rounded-2xl border border-amber-900/10 bg-amber-50/80 p-4 text-sm text-amber-900/80">
-          후원해 주신 분의 <strong className="font-medium text-amber-950">이름·닉네임</strong>은 추후
-          감사 명단으로 표시될 수 있습니다.
+          후원해 주신 분의 <strong className="font-medium text-amber-950">이름</strong>은
+          하단에 명단으로 표시됩니다. 원하지 않는다면 따로 말씀해주세요.
         </p>
 
         <div className="mt-8 space-y-3">
