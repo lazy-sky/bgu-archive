@@ -16,13 +16,20 @@ export const AVATAR_STYLES = [
 
 export type AvatarStyleId = (typeof AVATAR_STYLES)[number];
 
+/** UI 표시용. 내부 `style` id는 DiceBear 패키지명과 동일 */
 export const AVATAR_STYLE_LABELS: Record<AvatarStyleId, string> = {
-  lorelei: "Lorelei",
-  avataaars: "Avataaars",
-  micah: "Micah",
-  "toon-head": "Toon Head",
-  thumbs: "Thumbs",
-  adventurer: "Adventurer",
+  /** 엄지손가락 실루엣 스타일 */
+  thumbs: "엄지 캐릭터",
+  /** 얼굴·헤어 디테일이 많은 인물 일러스트 */
+  lorelei: "로렐라이 (상세 인물)",
+  /** 둥근 얼굴형의 클래식 카툰 아바타 */
+  avataaars: "둥근 카툰",
+  /** 단순한 형태의 미니멀 카툰 */
+  micah: "심플 카툰",
+  /** 머리 비율이 큰 SD 느낌의 툰 */
+  "toon-head": "큰 얼굴 툰",
+  /** RPG·판타지풍 초상 */
+  adventurer: "모험가",
 };
 
 /**
