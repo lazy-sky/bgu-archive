@@ -10,6 +10,7 @@ const links = [
   { href: "/games", label: "게임 목록" },
   { href: "/games/recommend", label: "게임 추천" },
   { href: "/members", label: "회원" },
+  { href: "/donate", label: "후원" },
 ];
 
 function HeaderDisplayName({
