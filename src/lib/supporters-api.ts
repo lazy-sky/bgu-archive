@@ -7,6 +7,7 @@ export async function fetchSupporters(
   const { data, error } = await supabase
     .from("supporters")
     .select("id, display_name, amount_krw, sort_order")
+    .order("amount_krw", { ascending: false })
     .order("sort_order", { ascending: true });
 
   if (error) throw error;
