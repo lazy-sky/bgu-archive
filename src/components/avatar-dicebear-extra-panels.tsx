@@ -336,25 +336,26 @@ function ColorRow({
   largePreview?: boolean;
 }) {
   const swatchClass = largePreview
-    ? "h-10 w-14 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5 sm:h-16 sm:w-28 sm:rounded-lg lg:h-[4.75rem] lg:w-32"
-    : "h-10 w-14 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5";
+    ? "h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-amber-900/20 bg-white p-0.5"
+    : "h-9 w-12 shrink-0 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5";
   return (
-    <label className="block text-sm">
+    <label className="block min-w-0 text-sm">
       <span className="text-amber-900/80">{label}</span>
-      <div className="mt-1 flex items-center gap-2">
+      <div className="mt-1 flex min-w-0 items-center gap-2">
+        <input
+          type="text"
+          value={hexToInput(value)}
+          onChange={(e) => onChange(hex6FromInput(e.target.value))}
+          className="min-w-0 max-w-[7.5rem] flex-1 rounded-lg border border-amber-900/15 bg-white px-2 py-2 font-mono text-xs text-amber-950 sm:w-[7.5rem] sm:flex-none"
+          maxLength={7}
+          spellCheck={false}
+        />
         <input
           type="color"
           value={hexToInput(value)}
           onChange={(e) => onChange(hex6FromInput(e.target.value))}
           className={swatchClass}
           aria-label={label}
-        />
-        <input
-          type="text"
-          value={hexToInput(value)}
-          onChange={(e) => onChange(hex6FromInput(e.target.value))}
-          className="flex-1 rounded-lg border border-amber-900/15 bg-white px-2 py-2 font-mono text-xs text-amber-950"
-          maxLength={7}
         />
       </div>
     </label>

@@ -228,50 +228,52 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
         수염
       </label>
 
-      <label className="block text-sm">
+      <label className="block min-w-0 text-sm">
         <span className="text-amber-900/80">머리 색</span>
-        <div className="mt-1 flex items-center gap-2">
-          <input
-            type="color"
-            value={hexToInput(firstOr(o.hairColor, "4a3728"))}
-            onChange={(e) =>
-              patchOptions({ hairColor: [hex6FromInput(e.target.value)] })
-            }
-            className="h-10 w-14 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5 sm:h-16 sm:w-28 sm:rounded-lg lg:h-[4.75rem] lg:w-32"
-            aria-label="머리 색"
-          />
+        <div className="mt-1 flex min-w-0 items-center gap-2">
           <input
             type="text"
             value={hexToInput(firstOr(o.hairColor, "4a3728"))}
             onChange={(e) =>
               patchOptions({ hairColor: [hex6FromInput(e.target.value)] })
             }
-            className="flex-1 rounded-lg border border-amber-900/15 bg-white px-2 py-2 font-mono text-xs text-amber-950"
+            className="min-w-0 max-w-[7.5rem] flex-1 rounded-lg border border-amber-900/15 bg-white px-2 py-2 font-mono text-xs text-amber-950 sm:w-[7.5rem] sm:flex-none"
             maxLength={7}
+            spellCheck={false}
+          />
+          <input
+            type="color"
+            value={hexToInput(firstOr(o.hairColor, "4a3728"))}
+            onChange={(e) =>
+              patchOptions({ hairColor: [hex6FromInput(e.target.value)] })
+            }
+            className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-amber-900/20 bg-white p-0.5"
+            aria-label="머리 색"
           />
         </div>
       </label>
 
-      <label className="block text-sm">
+      <label className="block min-w-0 text-sm">
         <span className="text-amber-900/80">피부 색</span>
-        <div className="mt-1 flex items-center gap-2">
-          <input
-            type="color"
-            value={hexToInput(firstOr(o.skinColor, "f5c9a8"))}
-            onChange={(e) =>
-              patchOptions({ skinColor: [hex6FromInput(e.target.value)] })
-            }
-            className="h-10 w-14 cursor-pointer rounded border border-amber-900/20 bg-white p-0.5 sm:h-16 sm:w-28 sm:rounded-lg lg:h-[4.75rem] lg:w-32"
-            aria-label="피부 색"
-          />
+        <div className="mt-1 flex min-w-0 items-center gap-2">
           <input
             type="text"
             value={hexToInput(firstOr(o.skinColor, "f5c9a8"))}
             onChange={(e) =>
               patchOptions({ skinColor: [hex6FromInput(e.target.value)] })
             }
-            className="flex-1 rounded-lg border border-amber-900/15 bg-white px-2 py-2 font-mono text-xs text-amber-950"
+            className="min-w-0 max-w-[7.5rem] flex-1 rounded-lg border border-amber-900/15 bg-white px-2 py-2 font-mono text-xs text-amber-950 sm:w-[7.5rem] sm:flex-none"
             maxLength={7}
+            spellCheck={false}
+          />
+          <input
+            type="color"
+            value={hexToInput(firstOr(o.skinColor, "f5c9a8"))}
+            onChange={(e) =>
+              patchOptions({ skinColor: [hex6FromInput(e.target.value)] })
+            }
+            className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-amber-900/20 bg-white p-0.5"
+            aria-label="피부 색"
           />
         </div>
       </label>

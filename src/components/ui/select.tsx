@@ -235,7 +235,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
               aria-selected={selectedOpt}
               aria-disabled={o.disabled}
               tabIndex={-1}
-              className={`cursor-pointer px-3 py-2 text-sm font-medium transition-colors ${
+              className={`cursor-pointer px-3 py-1.5 text-sm font-medium leading-snug transition-colors ${
                 o.disabled
                   ? "cursor-not-allowed text-amber-900/35"
                   : active
@@ -275,13 +275,13 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
           disabled={disabled}
-          className={`${selectSurfaceClass} flex items-center justify-between gap-2`}
+          className={`${selectSurfaceClass} relative`}
           onClick={() => !disabled && setOpen((o) => !o)}
           onKeyDown={onBtnKeyDown}
         >
-          <span className="min-w-0 flex-1 truncate">{label}</span>
+          <span className="block min-w-0 truncate pr-1 text-left">{label}</span>
           <span
-            className={`pointer-events-none shrink-0 text-amber-900/40 transition-transform duration-200 ${
+            className={`pointer-events-none absolute inset-y-0 right-0 flex w-9 items-center justify-center text-amber-900/40 transition-transform duration-200 ${
               open ? "rotate-180" : ""
             }`}
             aria-hidden
