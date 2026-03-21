@@ -58,8 +58,12 @@ pnpm seed
 2. **Supabase** → Authentication → **Providers** → **Google** 활성화  
    - Client ID / Client Secret 을 Google 에서 복사해 넣기
 3. **Supabase** → Authentication → **URL Configuration**  
-   - Site URL: 로컬이면 `http://localhost:3000`  
-   - Redirect URLs 에 `http://localhost:3000/auth/callback` (배포 도메인도 추가)
+   - **Redirect URLs**에 반드시 넣기 (하나라도 빠지면 로그인 후 **Site URL**로만 보내져서, Site URL이 로컬이면 **프로덕션에서도 localhost**로 튕길 수 있음):
+     - `http://localhost:3000/auth/callback`
+     - `https://<배포도메인>/auth/callback` (예: Vercel 기본 URL, 커스텀 도메인 각각)
+     - 미리보기용이면 `https://*.vercel.app/auth/callback` (와일드카드 허용 시)
+   - **Site URL**: 실제 서비스 주소를 쓰는 것이 안전합니다 (예: 프로덕션 `https://your-app.vercel.app`). 로컬만 쓸 때는 `http://localhost:3000` 유지.
+   - Vercel 등에는 **`NEXT_PUBLIC_SITE_URL`**을 프로덕션 절대 URL로 맞춰 두세요 (`.env.example` 참고).
 4. **SQL** (아직이면): [`migrations/20250321000001_google_oauth_profile_name.sql`](./migrations/20250321000001_google_oauth_profile_name.sql) 실행 — Google 의 `full_name` 을 `profiles.display_name` 에 쓰도록 트리거 함수 갱신. (`20250321000000_init.sql` 만 처음부터 돌린 경우 이미 포함됨)
 5. (선택) Authentication → Providers → **Email** 끄기 — 이메일 가입 차단
 
