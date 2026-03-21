@@ -18,8 +18,8 @@ const links = [
 function MenuIcon({ open }: { open: boolean }) {
   return (
     <svg
-      width="24"
-      height="24"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -63,9 +63,13 @@ function HeaderDisplayName({
 }
 
 const mobileNavLinkClass =
-  "rounded-lg px-3 py-2.5 text-base text-amber-900/85 transition hover:bg-amber-100/70 hover:text-amber-950";
+  "rounded-xl px-3 py-2.5 text-base font-medium text-amber-900/90 transition-colors hover:bg-amber-200/45 hover:text-amber-950 active:bg-amber-200/60";
+
 const desktopNavLinkClass =
-  "text-amber-900/80 transition hover:text-amber-950";
+  "rounded-full px-3 py-1.5 text-sm font-medium text-amber-900/75 transition-colors hover:bg-amber-200/40 hover:text-amber-950";
+
+const desktopAuthBtnClass =
+  "rounded-full border border-amber-900/12 bg-white/70 px-3 py-1.5 text-xs font-medium text-amber-900 shadow-sm transition hover:border-amber-900/25 hover:bg-amber-50";
 
 export function SiteHeader() {
   const { session, loading, supabase } = useAuth();
@@ -110,24 +114,29 @@ export function SiteHeader() {
     : [];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-amber-900/10 bg-amber-50/90 backdrop-blur-sm">
-      <div className="relative z-50 mx-auto flex max-w-6xl items-center justify-between gap-3 bg-amber-50/90 px-4 py-3">
+    <header className="sticky top-0 z-50 border-b border-amber-900/[0.08] bg-amber-50/90 shadow-[0_1px_0_rgba(251,191,36,0.06)] backdrop-blur-md">
+      <div className="relative z-50 mx-auto flex max-w-6xl items-center justify-between gap-3 bg-gradient-to-b from-amber-50/98 to-amber-50/85 px-4 py-3.5 sm:px-5">
         <Link
           href="/"
-          className="min-w-0 shrink-0 font-semibold tracking-tight text-amber-950"
+          className="group flex min-w-0 shrink-0 items-center gap-2.5"
         >
-          BGU Archive
+          <span
+            className="h-2 w-2 shrink-0 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 shadow-sm shadow-amber-600/25"
+            aria-hidden
+          />
+          <span className="bg-gradient-to-r from-amber-950 to-amber-900 bg-clip-text text-lg font-bold tracking-tight text-transparent transition group-hover:from-amber-900 group-hover:to-amber-800">
+            BGU Archive
+          </span>
         </Link>
 
-        {/* 데스크톱: 가로 메뉴 + 계정 */}
-        <div className="hidden min-w-0 flex-1 items-center justify-end gap-4 sm:flex">
-          <nav className="flex flex-wrap justify-end gap-x-4 gap-y-2 text-sm">
+        {/* 데스크톱 */}
+        <div className="hidden min-w-0 flex-1 items-center justify-end gap-5 sm:flex">
+          <nav
+            className="flex flex-wrap justify-end gap-x-1 gap-y-1.5 text-sm"
+            aria-label="주요 메뉴"
+          >
             {links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={desktopNavLinkClass}
-              >
+              <Link key={l.href} href={l.href} className={desktopNavLinkClass}>
                 {l.label}
               </Link>
             ))}
@@ -142,14 +151,15 @@ export function SiteHeader() {
                 </Link>
               ))}
           </nav>
+          <div className="h-6 w-px shrink-0 bg-amber-900/10" aria-hidden />
           <div className="shrink-0 text-sm text-amber-900/70 sm:text-right">
             {!supabase ? (
               <span className="text-xs text-amber-800/60">연결 없음</span>
             ) : loading ? (
-              <span>…</span>
+              <span className="tabular-nums text-amber-800/70">…</span>
             ) : session ? (
-              <span className="flex items-center gap-2">
-                <span className="max-w-[160px] truncate text-amber-950">
+              <span className="flex items-center gap-2.5">
+                <span className="max-w-[180px] truncate rounded-full border border-amber-900/10 bg-white/60 px-3 py-1 text-xs font-medium text-amber-950 shadow-sm">
                   {supabase ? (
                     <HeaderDisplayName
                       sessionUserId={session.user.id}
@@ -170,7 +180,7 @@ export function SiteHeader() {
                 <button
                   type="button"
                   onClick={() => void signOut()}
-                  className="rounded-md border border-amber-900/15 px-2 py-1 text-xs text-amber-900 hover:bg-amber-100/80"
+                  className={desktopAuthBtnClass}
                 >
                   로그아웃
                 </button>
@@ -178,7 +188,7 @@ export function SiteHeader() {
             ) : (
               <Link
                 href="/auth/login"
-                className="rounded-md bg-amber-900 px-3 py-1.5 text-xs font-medium text-amber-50 hover:bg-amber-800"
+                className="rounded-full bg-gradient-to-b from-amber-800 to-amber-900 px-4 py-2 text-xs font-semibold text-amber-50 shadow-sm transition hover:from-amber-900 hover:to-amber-950"
               >
                 로그인
               </Link>
@@ -186,12 +196,12 @@ export function SiteHeader() {
           </div>
         </div>
 
-        {/* 모바일: 로그인(비로그인) + 메뉴 토글 */}
+        {/* 모바일: 비로그인 시에만 로그인 버튼 */}
         <div className="flex shrink-0 items-center gap-2 sm:hidden">
           {!session && supabase && !loading && (
             <Link
               href="/auth/login"
-              className="rounded-full bg-amber-900 px-3 py-2 text-xs font-medium text-amber-50 hover:bg-amber-800"
+              className="rounded-full bg-gradient-to-b from-amber-800 to-amber-900 px-3.5 py-2 text-xs font-semibold text-amber-50 shadow-sm transition active:scale-[0.98]"
             >
               로그인
             </Link>
@@ -203,14 +213,14 @@ export function SiteHeader() {
             aria-controls={menuId}
             aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}
             onClick={() => setMenuOpen((o) => !o)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-amber-900/15 text-amber-900 hover:bg-amber-100/80"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-amber-900/12 bg-white/70 text-amber-900 shadow-sm transition hover:border-amber-900/22 hover:bg-amber-50 active:scale-[0.98]"
           >
             <MenuIcon open={menuOpen} />
           </button>
         </div>
       </div>
 
-      {/* 모바일: 배경 페이드 + 높이·슬라이드 패널 (sm 이상에서는 숨김) */}
+      {/* 모바일 패널 */}
       <div className="sm:hidden" aria-hidden={!menuOpen}>
         <button
           type="button"
@@ -229,7 +239,7 @@ export function SiteHeader() {
         >
           <div className="min-h-0 overflow-hidden">
             <div
-              className={`border-t border-amber-900/10 bg-amber-50/98 px-4 pb-5 pt-2 shadow-lg transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none motion-reduce:duration-0 ${
+              className={`border-t border-amber-900/10 bg-gradient-to-b from-amber-50/98 to-amber-100/30 px-4 pb-6 pt-3 shadow-[0_8px_30px_-12px_rgba(120,53,15,0.15)] transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none motion-reduce:duration-0 ${
                 menuOpen
                   ? "translate-y-0 opacity-100"
                   : "-translate-y-2 opacity-0"
@@ -242,7 +252,7 @@ export function SiteHeader() {
                 aria-hidden={!menuOpen}
                 inert={!menuOpen}
               >
-                <nav className="flex flex-col">
+                <nav className="flex flex-col gap-0.5">
                   {links.map((l) => (
                     <Link
                       key={l.href}
@@ -266,38 +276,35 @@ export function SiteHeader() {
                     ))}
                 </nav>
 
-                <div className="mt-4 border-t border-amber-900/10 pt-4">
+                <div className="mt-5 border-t border-amber-900/10 pt-5">
                   {!supabase ? (
                     <p className="text-sm text-amber-800/60">연결 없음</p>
                   ) : loading ? (
                     <p className="text-sm text-amber-900/70">…</p>
                   ) : session ? (
-                    <div className="flex flex-col gap-3">
-                      <p className="text-sm font-medium text-amber-950">
-                        <span className="text-amber-900/55">로그인 </span>
-                        <span className="break-all">
-                          {supabase ? (
-                            <HeaderDisplayName
-                              sessionUserId={session.user.id}
-                              fallback={String(
-                                session.user.user_metadata?.full_name ??
-                                  session.user.user_metadata?.name ??
-                                  session.user.email,
-                              )}
-                            />
-                          ) : (
-                            String(
+                    <div className="rounded-2xl border border-amber-900/10 bg-white/70 p-4 shadow-sm">
+                      <p className="break-words text-base font-semibold leading-snug text-amber-950">
+                        {supabase ? (
+                          <HeaderDisplayName
+                            sessionUserId={session.user.id}
+                            fallback={String(
                               session.user.user_metadata?.full_name ??
                                 session.user.user_metadata?.name ??
                                 session.user.email,
-                            )
-                          )}
-                        </span>
+                            )}
+                          />
+                        ) : (
+                          String(
+                            session.user.user_metadata?.full_name ??
+                              session.user.user_metadata?.name ??
+                              session.user.email,
+                          )
+                        )}
                       </p>
                       <button
                         type="button"
                         onClick={() => void signOut()}
-                        className="min-h-11 w-full rounded-lg border border-amber-900/20 bg-white px-3 py-2.5 text-sm font-medium text-amber-900 hover:bg-amber-50"
+                        className="mt-4 min-h-11 w-full rounded-xl border border-amber-900/15 bg-amber-50/80 px-3 py-2.5 text-sm font-medium text-amber-900 transition hover:bg-amber-100/90 active:scale-[0.99]"
                       >
                         로그아웃
                       </button>

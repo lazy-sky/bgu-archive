@@ -46,8 +46,7 @@ export function AvatarEditor({
     <fieldset className="min-w-0 rounded-xl border border-amber-900/10 bg-amber-50/40 p-4">
       <legend className="text-sm font-semibold text-amber-950">아바타</legend>
       <p className="mt-1 text-xs text-amber-800/75">
-        회원 목록에 표시되는 캐릭터입니다. DiceBear 스타일을 골라 꾸밀 수
-        있습니다.
+        회원 목록에 표시되는 캐릭터입니다.
       </p>
 
       <label className="mt-4 block text-sm sm:max-w-md">

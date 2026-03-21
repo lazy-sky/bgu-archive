@@ -33,7 +33,10 @@ export function ProfileForm() {
     () => new Set(),
   );
   const [ruleGameFilter, setRuleGameFilter] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [savedBasic, setSavedBasic] = useState(false);
+  const [savedGenres, setSavedGenres] = useState(false);
+  const [savedPlayStyles, setSavedPlayStyles] = useState(false);
+  const [savedRuleGames, setSavedRuleGames] = useState(false);
   const [avatarSaved, setAvatarSaved] = useState(false);
   const [avatarConfig, setAvatarConfig] =
     useState<AvatarConfig>(DEFAULT_AVATAR);
@@ -163,39 +166,91 @@ export function ProfileForm() {
     return PLAY_STYLE_OPTIONS.filter((p) => p.toLowerCase().includes(q));
   }, [playStyleFilter]);
 
-  const updateMutation = useMutation({
+  function assertLoggedIn() {
+    if (!supabase || !userId) throw new Error("로그인 필요");
+    return { supabase, userId };
+  }
+
+  const saveBasicMutation = useMutation({
     mutationFn: async () => {
-      if (!supabase || !userId) throw new Error("로그인 필요");
+      const { supabase, userId } = assertLoggedIn();
       const trimmedName = displayName.trim();
       if (!trimmedName) throw new Error("표시 이름을 입력해 주세요.");
-      const ruleList = [...ruleMasterSelected].sort((a, b) =>
-        a.localeCompare(b, "ko"),
-      );
-      const genreList = [...genreSelected].sort((a, b) =>
-        a.localeCompare(b, "ko"),
-      );
-      const playList = [...playStyleSelected].sort((a, b) =>
-        a.localeCompare(b, "ko"),
-      );
       const { error } = await supabase
         .from("profiles")
         .update({
           display_name: trimmedName,
           mbti: mbti.trim(),
           bio: bio.trim(),
-          favorite_genres: genreList,
-          favorite_game_types: playList,
-          rule_master_games: ruleList,
-          avatar_config: avatarConfigForSave(avatarConfig),
         })
         .eq("id", userId);
       if (error) throw error;
     },
     onSuccess: () => {
-      setSaved(true);
+      setSavedBasic(true);
       queryClient.invalidateQueries({ queryKey: ["profile", userId] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      setTimeout(() => setSaved(false), 3000);
+      setTimeout(() => setSavedBasic(false), 3000);
+    },
+  });
+
+  const saveGenresMutation = useMutation({
+    mutationFn: async () => {
+      const { supabase, userId } = assertLoggedIn();
+      const genreList = [...genreSelected].sort((a, b) =>
+        a.localeCompare(b, "ko"),
+      );
+      const { error } = await supabase
+        .from("profiles")
+        .update({ favorite_genres: genreList })
+        .eq("id", userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setSavedGenres(true);
+      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      setTimeout(() => setSavedGenres(false), 3000);
+    },
+  });
+
+  const savePlayStylesMutation = useMutation({
+    mutationFn: async () => {
+      const { supabase, userId } = assertLoggedIn();
+      const playList = [...playStyleSelected].sort((a, b) =>
+        a.localeCompare(b, "ko"),
+      );
+      const { error } = await supabase
+        .from("profiles")
+        .update({ favorite_game_types: playList })
+        .eq("id", userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setSavedPlayStyles(true);
+      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      setTimeout(() => setSavedPlayStyles(false), 3000);
+    },
+  });
+
+  const saveRuleGamesMutation = useMutation({
+    mutationFn: async () => {
+      const { supabase, userId } = assertLoggedIn();
+      const ruleList = [...ruleMasterSelected].sort((a, b) =>
+        a.localeCompare(b, "ko"),
+      );
+      const { error } = await supabase
+        .from("profiles")
+        .update({ rule_master_games: ruleList })
+        .eq("id", userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setSavedRuleGames(true);
+      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      setTimeout(() => setSavedRuleGames(false), 3000);
     },
   });
 
@@ -269,11 +324,12 @@ export function ProfileForm() {
     );
   }
 
-  function onSubmit(e: React.FormEvent) {
+  function preventFormSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSaved(false);
-    updateMutation.mutate();
   }
+
+  const sectionSaveBtnClass =
+    "rounded-full border border-amber-900/25 bg-white px-4 py-2 text-sm font-medium text-amber-950 hover:bg-amber-50 disabled:opacity-60";
 
   const inputClass =
     "mt-1.5 w-full rounded-lg border border-amber-900/15 bg-white px-3 py-2 text-amber-950 outline-none ring-amber-400/30 focus:ring-2";
@@ -281,28 +337,88 @@ export function ProfileForm() {
 
   return (
     <form
-      onSubmit={onSubmit}
+      onSubmit={preventFormSubmit}
       className="w-full max-w-xl space-y-5 rounded-xl border border-amber-900/10 bg-white/80 p-4 shadow-sm sm:p-6"
     >
-      <div>
-        <label htmlFor="display_name" className={labelClass}>
-          표시 이름
-        </label>
-        <p className="mt-1 text-xs text-amber-800/75">
-          회원 목록 등에 보이는 이름입니다.{" "}
-          <strong className="font-medium text-amber-900">본명</strong>으로
-          적어 주세요.
-        </p>
-        <input
-          id="display_name"
-          type="text"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          placeholder="본명으로 기입해 주세요"
-          autoComplete="name"
-          className={inputClass}
-        />
-      </div>
+      <section className="space-y-4" aria-labelledby="profile-basic-heading">
+        <h2
+          id="profile-basic-heading"
+          className="text-sm font-semibold text-amber-950"
+        >
+          기본 정보
+        </h2>
+        <div>
+          <label htmlFor="display_name" className={labelClass}>
+            표시 이름
+          </label>
+          <p className="mt-1 text-xs text-amber-800/75">
+            회원 목록 등에 보이는 이름입니다.{" "}
+            <strong className="font-medium text-amber-900">본명</strong>으로
+            적어 주세요.
+          </p>
+          <input
+            id="display_name"
+            type="text"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder="본명으로 기입해 주세요"
+            autoComplete="name"
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label htmlFor="mbti" className={labelClass}>
+            MBTI
+          </label>
+          <input
+            id="mbti"
+            type="text"
+            value={mbti}
+            onChange={(e) => setMbti(e.target.value)}
+            placeholder="예: ENFP"
+            className={inputClass}
+            maxLength={32}
+          />
+        </div>
+        <div>
+          <label htmlFor="bio" className={labelClass}>
+            소개
+          </label>
+          <textarea
+            id="bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            rows={3}
+            placeholder="한 줄 소개를 적어 주세요."
+            className={inputClass}
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-2 border-t border-amber-900/10 pt-3">
+          <button
+            type="button"
+            disabled={profileLoading || saveBasicMutation.isPending}
+            onClick={() => {
+              setSavedBasic(false);
+              saveBasicMutation.mutate();
+            }}
+            className={sectionSaveBtnClass}
+          >
+            {saveBasicMutation.isPending ? "저장 중…" : "기본 정보 저장"}
+          </button>
+          {savedBasic ? (
+            <p className="text-sm text-emerald-800" role="status">
+              저장했습니다. 회원 목록에서 확인할 수 있어요.
+            </p>
+          ) : null}
+          {saveBasicMutation.isError ? (
+            <p className="text-sm text-red-700" role="alert">
+              {saveBasicMutation.error instanceof Error
+                ? saveBasicMutation.error.message
+                : "저장에 실패했습니다."}
+            </p>
+          ) : null}
+        </div>
+      </section>
 
       <AvatarEditor
         value={avatarConfig}
@@ -316,35 +432,6 @@ export function ProfileForm() {
         saveAvatarError={saveAvatarMutation.error}
         saveAvatarSuccess={avatarSaved}
       />
-
-      <div>
-        <label htmlFor="mbti" className={labelClass}>
-          MBTI
-        </label>
-        <input
-          id="mbti"
-          type="text"
-          value={mbti}
-          onChange={(e) => setMbti(e.target.value)}
-          placeholder="예: ENFP"
-          className={inputClass}
-          maxLength={32}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="bio" className={labelClass}>
-          소개
-        </label>
-        <textarea
-          id="bio"
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          rows={3}
-          placeholder="한 줄 소개를 적어 주세요."
-          className={inputClass}
-        />
-      </div>
 
       <fieldset className="min-w-0">
         <legend className={`${labelClass} px-0`}>선호 장르</legend>
@@ -407,6 +494,31 @@ export function ProfileForm() {
           선택 {genreSelected.size}개
           {genreFilter.trim() ? ` · 표시 ${filteredGenres.length}개` : ""}
         </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-amber-900/10 pt-3">
+          <button
+            type="button"
+            disabled={gamesLoading || saveGenresMutation.isPending}
+            onClick={() => {
+              setSavedGenres(false);
+              saveGenresMutation.mutate();
+            }}
+            className={sectionSaveBtnClass}
+          >
+            {saveGenresMutation.isPending ? "저장 중…" : "선호 장르 저장"}
+          </button>
+          {savedGenres ? (
+            <p className="text-sm text-emerald-800" role="status">
+              저장했습니다.
+            </p>
+          ) : null}
+          {saveGenresMutation.isError ? (
+            <p className="text-sm text-red-700" role="alert">
+              {saveGenresMutation.error instanceof Error
+                ? saveGenresMutation.error.message
+                : "저장에 실패했습니다."}
+            </p>
+          ) : null}
+        </div>
       </fieldset>
 
       <fieldset className="min-w-0">
@@ -459,6 +571,31 @@ export function ProfileForm() {
             ? ` · 표시 ${filteredPlayStyles.length}개`
             : ""}
         </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-amber-900/10 pt-3">
+          <button
+            type="button"
+            disabled={savePlayStylesMutation.isPending}
+            onClick={() => {
+              setSavedPlayStyles(false);
+              savePlayStylesMutation.mutate();
+            }}
+            className={sectionSaveBtnClass}
+          >
+            {savePlayStylesMutation.isPending ? "저장 중…" : "플레이 스타일 저장"}
+          </button>
+          {savedPlayStyles ? (
+            <p className="text-sm text-emerald-800" role="status">
+              저장했습니다.
+            </p>
+          ) : null}
+          {savePlayStylesMutation.isError ? (
+            <p className="text-sm text-red-700" role="alert">
+              {savePlayStylesMutation.error instanceof Error
+                ? savePlayStylesMutation.error.message
+                : "저장에 실패했습니다."}
+            </p>
+          ) : null}
+        </div>
       </fieldset>
 
       <fieldset className="min-w-0">
@@ -522,31 +659,34 @@ export function ProfileForm() {
           선택 {ruleMasterSelected.size}개
           {ruleGameFilter.trim() ? ` · 표시 ${filteredGames.length}개` : ""}
         </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-amber-900/10 pt-3">
+          <button
+            type="button"
+            disabled={gamesLoading || saveRuleGamesMutation.isPending}
+            onClick={() => {
+              setSavedRuleGames(false);
+              saveRuleGamesMutation.mutate();
+            }}
+            className={sectionSaveBtnClass}
+          >
+            {saveRuleGamesMutation.isPending ? "저장 중…" : "룰마스터 목록 저장"}
+          </button>
+          {savedRuleGames ? (
+            <p className="text-sm text-emerald-800" role="status">
+              저장했습니다.
+            </p>
+          ) : null}
+          {saveRuleGamesMutation.isError ? (
+            <p className="text-sm text-red-700" role="alert">
+              {saveRuleGamesMutation.error instanceof Error
+                ? saveRuleGamesMutation.error.message
+                : "저장에 실패했습니다."}
+            </p>
+          ) : null}
+        </div>
       </fieldset>
 
-      {updateMutation.isError && (
-        <p className="text-sm text-red-700" role="alert">
-          {updateMutation.error instanceof Error
-            ? updateMutation.error.message
-            : "저장에 실패했습니다."}
-        </p>
-      )}
-      {saved && (
-        <p className="text-sm text-emerald-800" role="status">
-          저장했습니다. 회원 목록에서 확인할 수 있어요.
-        </p>
-      )}
-
-      <div className="flex flex-wrap gap-3">
-        <button
-          type="submit"
-          disabled={
-            profileLoading || gamesLoading || updateMutation.isPending
-          }
-          className="rounded-full bg-amber-900 px-5 py-2 text-sm font-medium text-amber-50 hover:bg-amber-800 disabled:opacity-60"
-        >
-          {updateMutation.isPending ? "저장 중…" : "저장"}
-        </button>
+      <div className="flex flex-wrap gap-3 border-t border-amber-900/10 pt-4">
         <Link
           href="/members"
           className="rounded-full border border-amber-900/20 px-5 py-2 text-sm text-amber-950 hover:bg-amber-50"

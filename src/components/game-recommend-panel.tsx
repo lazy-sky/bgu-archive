@@ -143,7 +143,7 @@ export function GameRecommendPanel({
               onChange={(e) => setOnlySelectedCanRule(e.target.checked)}
               className="rounded border-amber-900/30"
             />
-            선택한 사람만 룰마스터 가능한 게임만 보기
+            선택한 사람이 룰마스터 가능한 게임만 보기
           </label>
         )}
       </div>
@@ -152,12 +152,6 @@ export function GameRecommendPanel({
         <div className="mt-6 overflow-x-auto rounded-lg border border-amber-900/10 bg-white/90">
           <p className="border-b border-amber-900/10 bg-violet-100/40 px-3 py-2 text-sm text-amber-900">
             조건에 맞는 게임 <strong>{recommended.length}</strong>개
-            {onlySelectedCanRule && selectedIds.size > 0 && (
-              <span className="text-amber-800/80">
-                {" "}
-                (선택 인원 중 룰 설명 가능한 것만)
-              </span>
-            )}
           </p>
           {recommended.length === 0 ? (
             <p className="px-3 py-6 text-center text-sm text-amber-800/70">
