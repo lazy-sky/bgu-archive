@@ -51,9 +51,6 @@ export function SiteHeader() {
           className="shrink-0 font-semibold tracking-tight text-amber-950"
         >
           BGU Archive
-          <span className="ml-2 hidden text-xs font-normal text-amber-800/70 sm:inline">
-            BoardGameUnion
-          </span>
         </Link>
         <div className="flex min-w-0 flex-col gap-3 border-t border-amber-900/10 pt-3 sm:flex-row sm:items-center sm:justify-end sm:gap-4 sm:border-t-0 sm:pt-0">
           <nav className="flex flex-wrap gap-x-4 gap-y-2 text-sm sm:justify-end">

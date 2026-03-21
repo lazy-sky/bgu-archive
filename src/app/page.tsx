@@ -3,15 +3,12 @@ import Link from "next/link";
 export default function Home() {
   return (
     <main className="mx-auto flex max-w-3xl flex-1 flex-col justify-center px-4 py-10 sm:px-6 sm:py-16">
-      <p className="text-sm font-medium uppercase tracking-widest text-amber-800/70">
-        BoardGameUnion
-      </p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight text-amber-950 sm:text-4xl">
         BGU Archive
       </h1>
       <p className="mt-4 text-base leading-relaxed text-amber-900/80 sm:text-lg">
-        동아리에서 모은 보드게임 정보를 한곳에서 찾고, 인원·장르에 맞는 게임을
-        고르고, 누가 룰을 설명할 수 있는지까지 이어가는 아카이브의 시작점입니다.
+        BGU에서 모은 보드게임 정보를 한곳에서 찾고, 인원·장르에 맞는 게임을
+        고르고, 누가 룰을 설명할 수 있는지까지 이어가는 아카이브의 시작점입니다. 아직 만드는 중이니까 여러 의견 주시면 떙큐.
       </p>
       <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Link

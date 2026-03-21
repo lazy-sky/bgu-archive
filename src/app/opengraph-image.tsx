@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 
-export const alt = "BGU Archive — BoardGameUnion 보드게임 동아리";
+export const alt = "BGU Archive — Board Game Union";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -53,7 +53,7 @@ export default function OpenGraphImage() {
             letterSpacing: "0.02em",
           }}
         >
-          BoardGameUnion
+          BGU
         </div>
         <div
           style={{

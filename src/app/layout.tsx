@@ -30,7 +30,7 @@ function metadataBase(): URL {
 }
 
 const siteDescription =
-  "BoardGameUnion(BGU) 동아리의 보드게임 목록, 룰마스터, 추천을 한곳에서.";
+  "BGU의 아카이브";
 
 export const metadata: Metadata = {
   metadataBase: metadataBase(),
@@ -43,7 +43,6 @@ export const metadata: Metadata = {
     "보드게임",
     "동아리",
     "BGU",
-    "BoardGameUnion",
     "보드게임유니온",
   ],
   openGraph: {
