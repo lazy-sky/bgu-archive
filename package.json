@@ -1,0 +1,39 @@
+{
+  "name": "bgu-archive",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.6.5",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "import-games": "node scripts/import-games.mjs",
+    "sync-games": "node scripts/sync-games.mjs",
+    "games:from-xlsx": "node scripts/xlsx-to-supabase.mjs",
+    "games:sql": "node scripts/generate-games-seed-sql.mjs",
+    "db:migrate": "node scripts/apply-migration.mjs",
+    "seed": "node scripts/seed-supabase.mjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.99.3",
+    "@tanstack/react-query": "^5.91.3",
+    "next": "16.2.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "dotenv": "^16.4.7",
+    "pg": "^8.14.1",
+    "eslint-config-next": "16.2.1",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "xlsx": "^0.18.5"
+  }
+}
