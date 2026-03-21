@@ -64,10 +64,40 @@ async function findUserIdByEmail(email) {
   return null;
 }
 
+/**
+ * games.added_by FK는 public.profiles(id) 를 가리킵니다.
+ * auth 사용자 id와 profiles 행이 어긋나 있으면 이메일만으로는 실패합니다.
+ */
+async function resolveKimProfileId() {
+  const { data: byName, error: e1 } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("display_name", "김하늘")
+    .limit(1)
+    .maybeSingle();
+  if (e1) throw e1;
+  if (byName?.id) return byName.id;
+
+  const authId = await findUserIdByEmail("kim.haneul@bgu.local");
+  if (!authId) return null;
+  const { data: byAuth, error: e2 } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", authId)
+    .maybeSingle();
+  if (e2) throw e2;
+  return byAuth?.id ?? null;
+}
+
 async function main() {
-  const kimId = await findUserIdByEmail("kim.haneul@bgu.local");
+  const kimId = await resolveKimProfileId();
   if (!kimId) {
-    console.error("김하늘(kim.haneul@bgu.local) 계정이 없습니다. 중단합니다.");
+    console.error(`
+profiles에 display_name이 「김하늘」인 행이 없습니다. games.added_by 는 profiles.id 를 가리켜야 합니다.
+
+  · 실제로 쓰는 계정이 본명이 김하늘이면 마이페이지에서 표시 이름을 확인하거나
+  · kim.haneul@bgu.local 로 시드 로그인 후 프로필이 생겼는지 확인하세요.
+`);
     process.exit(1);
   }
 
