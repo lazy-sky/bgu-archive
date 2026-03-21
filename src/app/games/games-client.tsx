@@ -197,21 +197,38 @@ export function GamesClient() {
             표시할 단계만 선택합니다. 하나도 선택하지 않으면 난이도로는 걸러지지
             않습니다. 미기재(—) 게임은 항상 나옵니다.
           </p>
-          <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
-            {DIFFICULTY_LEVELS.map((level) => (
-              <label
-                key={level}
-                className="inline-flex cursor-pointer items-center gap-2 text-sm text-amber-950 has-[:focus-visible]:rounded has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-amber-400/40"
-              >
-                <input
-                  type="checkbox"
-                  checked={difficultyLevels.has(level)}
-                  onChange={() => toggleDifficultyLevel(level)}
-                  className="rounded border-amber-900/30"
-                />
-                <span className="tabular-nums">{level}</span>
-              </label>
-            ))}
+          <div
+            className="mt-3 flex flex-wrap gap-2"
+            role="group"
+            aria-label="난이도 단계"
+          >
+            {DIFFICULTY_LEVELS.map((level) => {
+              const checked = difficultyLevels.has(level);
+              return (
+                <label
+                  key={level}
+                  className="relative inline-flex cursor-pointer select-none"
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleDifficultyLevel(level)}
+                    className="peer sr-only"
+                  />
+                  <span
+                    className={[
+                      "inline-flex min-w-[2.75rem] items-center justify-center rounded-full border px-3 py-2 text-sm font-semibold tabular-nums transition",
+                      "border-amber-900/12 bg-white/90 text-amber-800/90 shadow-sm",
+                      "hover:border-amber-800/25 hover:bg-amber-50/80",
+                      "peer-focus-visible:ring-2 peer-focus-visible:ring-amber-400/50 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-amber-50/0",
+                      "peer-checked:border-amber-700/50 peer-checked:bg-gradient-to-b peer-checked:from-amber-100/95 peer-checked:to-amber-200/50 peer-checked:text-amber-950 peer-checked:shadow-md peer-checked:ring-1 peer-checked:ring-amber-200/60",
+                    ].join(" ")}
+                  >
+                    {level}
+                  </span>
+                </label>
+              );
+            })}
           </div>
         </fieldset>
       </div>
