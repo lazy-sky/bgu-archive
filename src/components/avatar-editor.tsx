@@ -11,6 +11,7 @@ import { AvatarLoreleiPanel } from "@/components/avatar-lorelei-panel";
 import { MemberAvatar } from "@/components/member-avatar";
 import { defaultAvatarForStyle } from "@/lib/avatar-defaults";
 import { randomAvatarConfig } from "@/lib/random-avatar";
+import { Select } from "@/components/ui/select";
 import {
   AVATAR_STYLE_LABELS,
   AVATAR_STYLES,
@@ -51,8 +52,8 @@ export function AvatarEditor({
 
       <label className="mt-4 block text-sm sm:max-w-md">
         <span className="text-amber-900/80">스타일</span>
-        <select
-          className="mt-1 w-full rounded-lg border border-amber-900/15 bg-white px-2 py-2 text-sm font-medium text-amber-950 outline-none focus:ring-2 focus:ring-amber-400/40"
+        <Select
+          className="mt-1"
           value={value.style}
           onChange={(e) => setStyle(e.target.value as AvatarStyleId)}
         >
@@ -61,7 +62,7 @@ export function AvatarEditor({
               {AVATAR_STYLE_LABELS[s]}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
       <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
@@ -113,7 +114,7 @@ export function AvatarEditor({
           </button>
           {saveAvatarSuccess ? (
             <p className="text-sm text-emerald-800" role="status">
-              아바타만 저장했습니다. 회원 목록에 반영됩니다.
+              아바타가 저장됐습니다.
             </p>
           ) : null}
           {saveAvatarError ? (

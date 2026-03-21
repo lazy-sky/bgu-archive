@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/auth-provider";
+import { Select } from "@/components/ui/select";
 import { parseMinPlayersInput } from "@/lib/parse-min-players";
 import { parseMaxPlayersInput } from "@/lib/parse-max-players";
 import { useQueryClient } from "@tanstack/react-query";
@@ -102,17 +103,17 @@ export function AddGameForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="text-amber-900/70">난이도 (1–4)</span>
-          <select
+          <Select
+            className="mt-1"
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
           >
             {[1, 2, 3, 4].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <label className="block text-sm">
           <span className="text-amber-900/70">장르</span>

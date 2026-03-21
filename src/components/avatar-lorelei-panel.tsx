@@ -8,8 +8,8 @@ import {
   loreleiMouthLabel,
   loreleiVariantLabel,
 } from "@/lib/lorelei-labels";
+import { Select } from "@/components/ui/select";
 import {
-  AVATAR_SELECT_CLASS,
   firstOr,
   hex6FromInput,
   hexToInput,
@@ -33,7 +33,6 @@ type Props = {
 
 export function AvatarLoreleiPanel({ value, onChange }: Props) {
   const o = value.options;
-  const sel = AVATAR_SELECT_CLASS;
 
   function patchOptions(patch: Partial<LoreleiOptions>) {
     onChange({
@@ -49,8 +48,8 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
     <div className="grid w-full min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
       <label className="block text-sm">
         <span className="text-amber-900/80">머리</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.hair, "variant24")}
           onChange={(e) =>
             patchOptions({
@@ -63,13 +62,13 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
               {loreleiVariantLabel("머리", k)}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
       <label className="block text-sm">
         <span className="text-amber-900/80">얼굴형</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.head, "variant02")}
           onChange={(e) =>
             patchOptions({
@@ -82,13 +81,13 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
               {loreleiHeadLabel(k)}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
       <label className="block text-sm">
         <span className="text-amber-900/80">눈</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.eyes, "variant12")}
           onChange={(e) =>
             patchOptions({
@@ -101,13 +100,13 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
               {loreleiVariantLabel("눈", k)}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
       <label className="block text-sm">
         <span className="text-amber-900/80">눈썹</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.eyebrows, "variant06")}
           onChange={(e) =>
             patchOptions({
@@ -120,13 +119,13 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
               {loreleiVariantLabel("눈썹", k)}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
       <label className="block text-sm">
         <span className="text-amber-900/80">입</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.mouth, "happy01")}
           onChange={(e) =>
             patchOptions({
@@ -139,13 +138,13 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
               {loreleiMouthLabel(k)}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
       <label className="block text-sm">
         <span className="text-amber-900/80">코</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.nose, "variant03")}
           onChange={(e) =>
             patchOptions({
@@ -158,13 +157,13 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
               {loreleiVariantLabel("코", k)}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
       <label className="block text-sm">
         <span className="text-amber-900/80">안경 종류</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.glasses, "variant01")}
           onChange={(e) =>
             patchOptions({
@@ -178,13 +177,13 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
               {loreleiGlassesLabel(k)}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
       <label className="block text-sm">
         <span className="text-amber-900/80">수염</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.beard, "variant01")}
           onChange={(e) =>
             patchOptions({
@@ -198,7 +197,7 @@ export function AvatarLoreleiPanel({ value, onChange }: Props) {
               {loreleiBeardLabel(k)}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
       <label className="flex cursor-pointer items-center gap-2 text-sm text-amber-950 sm:col-span-2">

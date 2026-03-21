@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@/components/ui/select";
 import { RuleMasterCollapsible } from "@/components/rule-master-collapsible";
 import { useAuth, useSupabase } from "@/components/auth-provider";
 import { fetchGames, getGameGenres } from "@/lib/games-api";
@@ -168,10 +169,9 @@ export function GamesClient() {
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-amber-900/70">장르</span>
-            <select
+            <Select
               value={genre}
               onChange={(e) => setGenre(e.target.value)}
-              className="rounded-lg border border-amber-900/15 bg-white px-3 py-2 text-amber-950 outline-none focus:ring-2 focus:ring-amber-400/30"
             >
               <option value="">전체</option>
               {genres.map((g) => (
@@ -179,37 +179,35 @@ export function GamesClient() {
                   {g}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-amber-900/70">입문용</span>
-            <select
+            <Select
               value={beginner}
               onChange={(e) =>
                 setBeginner(e.target.value as "all" | "yes" | "no")
               }
-              className="rounded-lg border border-amber-900/15 bg-white px-3 py-2 text-amber-950 outline-none focus:ring-2 focus:ring-amber-400/30"
             >
               <option value="all">전체</option>
               <option value="yes">입문용만</option>
               <option value="no">비입문만</option>
-            </select>
+            </Select>
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-amber-900/70">정렬</span>
-            <select
+            <Select
               value={sortMode}
               onChange={(e) =>
                 setSortMode(e.target.value as GameSortMode)
               }
-              className="rounded-lg border border-amber-900/15 bg-white px-3 py-2 text-amber-950 outline-none focus:ring-2 focus:ring-amber-400/30"
             >
               <option value="name_asc">가나다순</option>
               <option value="difficulty_desc">난이도 높은순</option>
               <option value="difficulty_asc">난이도 낮은순</option>
               <option value="players_desc">인원수 많은 순</option>
               <option value="players_asc">인원수 적은 순</option>
-            </select>
+            </Select>
           </label>
         </div>
         <fieldset className="min-w-0 border-0 p-0">

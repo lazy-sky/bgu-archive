@@ -5,8 +5,8 @@ import type { Options as AvataaarsOptions } from "@dicebear/avataaars";
 import type { Options as MicahOptions } from "@dicebear/micah";
 import type { Options as ThumbsOptions } from "@dicebear/thumbs";
 import type { Options as ToonHeadOptions } from "@dicebear/toon-head";
+import { Select } from "@/components/ui/select";
 import {
-  AVATAR_SELECT_CLASS,
   firstOr,
   hex6FromInput,
   hexToInput,
@@ -17,8 +17,6 @@ import {
   LORELEI_EYES_ASC,
 } from "@/lib/lorelei-variants";
 import type { AvatarConfig } from "@/types/avatar";
-
-const sel = AVATAR_SELECT_CLASS;
 
 /* ─── Avataaars (스키마 enum) ─── */
 const AV_TOP = [
@@ -164,8 +162,8 @@ export function AvatarAvataaarsPanel({ value, onChange }: AvProps) {
     <div className="grid w-full min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
       <label className="block text-sm sm:col-span-2">
         <span className="text-amber-900/80">헤어 / 모자 (top)</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.top, "bob")}
           onChange={(e) => patch({ top: [e.target.value as (typeof AV_TOP)[number]] })}
         >
@@ -174,12 +172,12 @@ export function AvatarAvataaarsPanel({ value, onChange }: AvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">눈</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.eyes, "default")}
           onChange={(e) => patch({ eyes: [e.target.value as (typeof AV_EYES)[number]] })}
         >
@@ -188,12 +186,12 @@ export function AvatarAvataaarsPanel({ value, onChange }: AvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">눈썹</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.eyebrows, "default")}
           onChange={(e) => patch({ eyebrows: [e.target.value as (typeof AV_BROWS)[number]] })}
         >
@@ -202,12 +200,12 @@ export function AvatarAvataaarsPanel({ value, onChange }: AvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">입</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.mouth, "smile")}
           onChange={(e) => patch({ mouth: [e.target.value as (typeof AV_MOUTH)[number]] })}
         >
@@ -216,12 +214,12 @@ export function AvatarAvataaarsPanel({ value, onChange }: AvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">의상</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.clothing, "shirtCrewNeck")}
           onChange={(e) =>
             patch({ clothing: [e.target.value as (typeof AV_CLOTHING)[number]] })
@@ -232,12 +230,12 @@ export function AvatarAvataaarsPanel({ value, onChange }: AvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">액세서리</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.accessories, "round")}
           onChange={(e) => patch({ accessories: [e.target.value as (typeof AV_ACC)[number]] })}
           disabled={!accOn}
@@ -247,12 +245,12 @@ export function AvatarAvataaarsPanel({ value, onChange }: AvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">수염·털</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.facialHair, "beardMedium")}
           onChange={(e) =>
             patch({ facialHair: [e.target.value as (typeof AV_FACIAL)[number]] })
@@ -264,12 +262,12 @@ export function AvatarAvataaarsPanel({ value, onChange }: AvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">그래픽 티 패턴</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.clothingGraphic, "skull")}
           onChange={(e) =>
             patch({ clothingGraphic: [e.target.value as (typeof AV_GRAPHIC)[number]] })
@@ -280,7 +278,7 @@ export function AvatarAvataaarsPanel({ value, onChange }: AvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="flex cursor-pointer items-center gap-2 text-sm text-amber-950 sm:col-span-2">
         <input
@@ -415,8 +413,8 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">머리 스타일</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.hair, "full")}
           onChange={(e) => patch({ hair: [e.target.value as (typeof MI_HAIR)[number]] })}
           disabled={!hairOn}
@@ -426,12 +424,12 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">눈</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.eyes, "eyes")}
           onChange={(e) => patch({ eyes: [e.target.value as (typeof MI_EYES)[number]] })}
         >
@@ -440,12 +438,12 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">입</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.mouth, "smile")}
           onChange={(e) => patch({ mouth: [e.target.value as (typeof MI_MOUTH)[number]] })}
         >
@@ -454,12 +452,12 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">눈썹</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.eyebrows, "up")}
           onChange={(e) => patch({ eyebrows: [e.target.value as (typeof MI_BROWS)[number]] })}
         >
@@ -468,12 +466,12 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">코</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.nose, "curve")}
           onChange={(e) => patch({ nose: [e.target.value as (typeof MI_NOSE)[number]] })}
         >
@@ -482,12 +480,12 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">귀</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.ears, "attached")}
           onChange={(e) => patch({ ears: [e.target.value as (typeof MI_EARS)[number]] })}
         >
@@ -496,12 +494,12 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">셔츠</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.shirt, "crew")}
           onChange={(e) => patch({ shirt: [e.target.value as (typeof MI_SHIRT)[number]] })}
         >
@@ -510,12 +508,12 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">귀걸이</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.earrings, "hoop")}
           onChange={(e) => patch({ earrings: [e.target.value as (typeof MI_EARR)[number]] })}
           disabled={!eOn}
@@ -525,12 +523,12 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">안경</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.glasses, "round")}
           onChange={(e) => patch({ glasses: [e.target.value as (typeof MI_GLASSES)[number]] })}
           disabled={!gOn}
@@ -540,12 +538,12 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">수염</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.facialHair, "beard")}
           onChange={(e) => patch({ facialHair: [e.target.value as (typeof MI_FACIAL)[number]] })}
           disabled={!fOn}
@@ -555,7 +553,7 @@ export function AvatarMicahPanel({ value, onChange }: MicProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="flex cursor-pointer items-center gap-2 text-sm text-amber-950 sm:col-span-2">
         <input
@@ -647,8 +645,8 @@ export function AvatarToonHeadPanel({ value, onChange }: ToonProps) {
     <div className="grid w-full min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
       <label className="block text-sm">
         <span className="text-amber-900/80">의상</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.clothes, "shirt")}
           onChange={(e) =>
             patch({ clothes: [e.target.value as (typeof TH_CLOTHES)[number]] })
@@ -659,12 +657,12 @@ export function AvatarToonHeadPanel({ value, onChange }: ToonProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">입</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.mouth, "smile")}
           onChange={(e) => patch({ mouth: [e.target.value as (typeof TH_MOUTH)[number]] })}
         >
@@ -673,12 +671,12 @@ export function AvatarToonHeadPanel({ value, onChange }: ToonProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">눈</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.eyes, "happy")}
           onChange={(e) => patch({ eyes: [e.target.value as (typeof TH_EYES)[number]] })}
         >
@@ -687,12 +685,12 @@ export function AvatarToonHeadPanel({ value, onChange }: ToonProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">눈썹</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.eyebrows, "neutral")}
           onChange={(e) => patch({ eyebrows: [e.target.value as (typeof TH_BROWS)[number]] })}
         >
@@ -701,12 +699,12 @@ export function AvatarToonHeadPanel({ value, onChange }: ToonProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">앞머리·스타일</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.hair, "bun")}
           onChange={(e) => patch({ hair: [e.target.value as (typeof TH_HAIR)[number]] })}
           disabled={!hairOn}
@@ -716,12 +714,12 @@ export function AvatarToonHeadPanel({ value, onChange }: ToonProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">뒷머리</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.rearHair, "neckHigh")}
           onChange={(e) => patch({ rearHair: [e.target.value as (typeof TH_REAR)[number]] })}
           disabled={!rearOn}
@@ -731,12 +729,12 @@ export function AvatarToonHeadPanel({ value, onChange }: ToonProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">수염 스타일</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.beard, "chin")}
           onChange={(e) => patch({ beard: [e.target.value as (typeof TH_BEARD)[number]] })}
           disabled={!beardOn}
@@ -746,7 +744,7 @@ export function AvatarToonHeadPanel({ value, onChange }: ToonProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="flex cursor-pointer items-center gap-2 text-sm text-amber-950 sm:col-span-2">
         <input
@@ -846,8 +844,8 @@ export function AvatarThumbsPanel({ value, onChange }: ThumbsProps) {
     <div className="grid w-full min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
       <label className="block text-sm">
         <span className="text-amber-900/80">얼굴 형태</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.face, "variant1")}
           onChange={(e) => patch({ face: [e.target.value as (typeof THB_FACE)[number]] })}
         >
@@ -856,12 +854,12 @@ export function AvatarThumbsPanel({ value, onChange }: ThumbsProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">입</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.mouth, "variant1")}
           onChange={(e) => patch({ mouth: [e.target.value as (typeof THB_MOUTH)[number]] })}
         >
@@ -870,12 +868,12 @@ export function AvatarThumbsPanel({ value, onChange }: ThumbsProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm sm:col-span-2">
         <span className="text-amber-900/80">눈 (일부 옵션)</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.eyes, "variant1W12")}
           onChange={(e) => patch({ eyes: [e.target.value as (typeof THB_EYES)[number]] })}
         >
@@ -884,7 +882,7 @@ export function AvatarThumbsPanel({ value, onChange }: ThumbsProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <ColorRow
         label="손·외곽 색"
@@ -978,8 +976,8 @@ export function AvatarAdventurerPanel({ value, onChange }: AdvProps) {
       </label>
       <label className="block text-sm sm:col-span-2">
         <span className="text-amber-900/80">머리</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.hair, "long01")}
           onChange={(e) => patch({ hair: [e.target.value as (typeof AD_HAIR)[number]] })}
           disabled={!hairOn}
@@ -989,12 +987,12 @@ export function AvatarAdventurerPanel({ value, onChange }: AdvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">눈</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.eyes, "variant12")}
           onChange={(e) =>
             patch({
@@ -1007,12 +1005,12 @@ export function AvatarAdventurerPanel({ value, onChange }: AdvProps) {
               {loreleiVariantLabel("눈", k)}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">눈썹</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.eyebrows, "variant06")}
           onChange={(e) =>
             patch({
@@ -1025,12 +1023,12 @@ export function AvatarAdventurerPanel({ value, onChange }: AdvProps) {
               {loreleiVariantLabel("눈썹", k)}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm sm:col-span-2">
         <span className="text-amber-900/80">입</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.mouth, "variant15")}
           onChange={(e) => patch({ mouth: [e.target.value as (typeof AD_MOUTH)[number]] })}
         >
@@ -1039,12 +1037,12 @@ export function AvatarAdventurerPanel({ value, onChange }: AdvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">안경</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.glasses, "variant01")}
           onChange={(e) => patch({ glasses: [e.target.value as (typeof AD_GLASSES)[number]] })}
           disabled={!gOn}
@@ -1054,12 +1052,12 @@ export function AvatarAdventurerPanel({ value, onChange }: AdvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm">
         <span className="text-amber-900/80">귀걸이</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.earrings, "variant01")}
           onChange={(e) => patch({ earrings: [e.target.value as (typeof AD_EARR)[number]] })}
           disabled={!eOn}
@@ -1069,12 +1067,12 @@ export function AvatarAdventurerPanel({ value, onChange }: AdvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-sm sm:col-span-2">
         <span className="text-amber-900/80">얼굴 특징</span>
-        <select
-          className={sel}
+        <Select
+          className="mt-1"
           value={firstOr(o.features, "freckles")}
           onChange={(e) =>
             patch({ features: [e.target.value as (typeof AD_FEAT)[number]] })
@@ -1086,7 +1084,7 @@ export function AvatarAdventurerPanel({ value, onChange }: AdvProps) {
               {k}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="flex cursor-pointer items-center gap-2 text-sm text-amber-950 sm:col-span-2">
         <input
