@@ -1,5 +1,4 @@
--- 장르: 단일 text → 다중 text[]
--- genres 는 항상 먼저 추가 (이전 버전은 genre 가 있을 때만 add 해서 PGRST204 유발 가능)
+-- 복구: 이미 적용된 DB에 genres 가 없을 때(PGRST204) 안전하게 컬럼 추가·이전
 
 alter table public.games
   add column if not exists genres text[] not null default '{}';
