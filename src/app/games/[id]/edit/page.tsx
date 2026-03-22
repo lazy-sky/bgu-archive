@@ -20,7 +20,7 @@ export default async function EditGamePage({
           게임 수정
         </h1>
         <p className="mt-1 text-sm leading-relaxed text-amber-900/65">
-          본인이 등록한 게임만 수정할 수 있습니다.
+          로그인한 회원은 누구나 수정할 수 있습니다. (임시)
         </p>
       </div>
       <EditGameForm gameId={id} />

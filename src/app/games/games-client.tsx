@@ -4,7 +4,6 @@ import { Select } from "@/components/ui/select";
 import { RuleMasterCollapsible } from "@/components/rule-master-collapsible";
 import { useAuth, useSupabase } from "@/components/auth-provider";
 import { fetchGames, getGameGenres } from "@/lib/games-api";
-import { fetchProfile } from "@/lib/profile-api";
 import { fetchMembers } from "@/lib/members-api";
 import { formatPlayerRange } from "@/lib/format-players";
 import { buildRuleMastersByGameName } from "@/lib/rule-master";
@@ -41,17 +40,6 @@ function filterGames(
 export function GamesClient() {
   const supabase = useSupabase();
   const { session } = useAuth();
-
-  const { data: myProfile } = useQuery({
-    queryKey: ["profile", session?.user.id],
-    queryFn: async () => {
-      if (!supabase || !session?.user.id) return null;
-      return fetchProfile(supabase, session.user.id);
-    },
-    enabled: !!supabase && !!session?.user.id,
-    staleTime: 30 * 1000,
-  });
-  const isAdmin = myProfile?.is_admin ?? false;
 
   const { data: games = [], isPending, error } = useQuery({
     queryKey: ["games"],
@@ -270,16 +258,14 @@ export function GamesClient() {
                   </span>
                   {g.name}
                 </h3>
-                {session?.user.id &&
-                  (isAdmin ||
-                    (g.addedBy != null && session.user.id === g.addedBy)) && (
-                    <Link
-                      href={`/games/${g.id}/edit`}
-                      className="shrink-0 text-sm font-medium text-amber-800 underline underline-offset-2 hover:text-amber-950"
-                    >
-                      수정
-                    </Link>
-                  )}
+                {session?.user.id ? (
+                  <Link
+                    href={`/games/${g.id}/edit`}
+                    className="shrink-0 text-sm font-medium text-amber-800 underline underline-offset-2 hover:text-amber-950"
+                  >
+                    수정
+                  </Link>
+                ) : null}
               </div>
               <div className="mt-3 space-y-2 text-sm text-amber-900/90">
                 <div className="flex flex-wrap gap-x-3 gap-y-1">
@@ -383,17 +369,14 @@ export function GamesClient() {
                       <span className="min-w-0 break-words [overflow-wrap:anywhere]">
                         {g.name}
                       </span>
-                      {session?.user.id &&
-                        (isAdmin ||
-                          (g.addedBy != null &&
-                            session.user.id === g.addedBy)) && (
-                          <Link
-                            href={`/games/${g.id}/edit`}
-                            className="shrink-0 text-xs font-medium text-amber-800 underline underline-offset-2 hover:text-amber-950"
-                          >
-                            수정
-                          </Link>
-                        )}
+                      {session?.user.id ? (
+                        <Link
+                          href={`/games/${g.id}/edit`}
+                          className="shrink-0 text-xs font-medium text-amber-800 underline underline-offset-2 hover:text-amber-950"
+                        >
+                          수정
+                        </Link>
+                      ) : null}
                     </div>
                   </td>
                   <td className="px-2 py-2.5 text-center text-amber-900/90">

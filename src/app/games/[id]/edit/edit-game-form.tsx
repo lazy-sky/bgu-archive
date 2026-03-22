@@ -5,7 +5,6 @@ import { Select } from "@/components/ui/select";
 import { GameGenreMultiPicker } from "@/components/game-genre-multi-picker";
 import { fetchGameById, fetchGames } from "@/lib/games-api";
 import { getGenreOptionsForPicker } from "@/lib/game-genre-tags";
-import { fetchProfile } from "@/lib/profile-api";
 import { parseMinPlayersInput } from "@/lib/parse-min-players";
 import { parseMaxPlayersInput } from "@/lib/parse-max-players";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -71,17 +70,6 @@ export function EditGameForm({ gameId }: Props) {
     () => getGenreOptionsForPicker(allGames),
     [allGames],
   );
-
-  const { data: myProfile } = useQuery({
-    queryKey: ["profile", session?.user.id],
-    queryFn: async () => {
-      if (!supabase || !session?.user.id) return null;
-      return fetchProfile(supabase, session.user.id);
-    },
-    enabled: !!supabase && !!session?.user.id,
-    staleTime: 30 * 1000,
-  });
-  const isAdmin = myProfile?.is_admin ?? false;
 
   useEffect(() => {
     if (!game) return;
@@ -167,20 +155,6 @@ export function EditGameForm({ gameId }: Props) {
           목록으로
         </Link>
       </p>
-    );
-  }
-
-  if (!isAdmin && game.addedBy !== session.user.id) {
-    return (
-      <div className="rounded-xl border border-amber-900/15 bg-amber-50/80 p-6 text-amber-900">
-        <p>이 게임은 등록한 사람만 수정할 수 있습니다.</p>
-        <Link
-          href="/games"
-          className="mt-3 inline-block text-sm font-medium text-amber-800 underline"
-        >
-          게임 목록으로
-        </Link>
-      </div>
     );
   }
 
