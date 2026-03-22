@@ -75,8 +75,7 @@ export function AvatarEditor({
           role="status"
         >
           <p>
-            <strong className="font-semibold">로렐라이</strong>는 후원 감사
-            명단에 이름이 올라가고 금액이 표시된 경우에만 저장할 수 있습니다.
+            이 스타일은 후원자를 위한 유료 스타일입니다.
             미리보기·옵션 조절은 자유롭게 해 볼 수 있어요.
           </p>
           <p className="mt-1.5 text-amber-900/85">
