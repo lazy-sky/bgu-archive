@@ -1,7 +1,7 @@
 "use client";
 
 import { GameRecommendPanel } from "@/components/game-recommend-panel";
-import { useSupabase } from "@/components/auth-provider";
+import { useAuth, useSupabase } from "@/components/auth-provider";
 import { fetchGames } from "@/lib/games-api";
 import { fetchMembers } from "@/lib/members-api";
 import { buildRuleMastersByGameName } from "@/lib/rule-master";
@@ -11,12 +11,14 @@ import { useMemo } from "react";
 
 export function RecommendClient() {
   const supabase = useSupabase();
+  const { session } = useAuth();
+  const viewerKey = session?.user.id ?? "anon";
 
   const { data: games = [], isPending, error } = useQuery({
-    queryKey: ["games"],
+    queryKey: ["games", viewerKey],
     queryFn: () => {
       if (!supabase) throw new Error("데이터를 불러올 수 없습니다.");
-      return fetchGames(supabase);
+      return fetchGames(supabase, { viewerUserId: session?.user.id });
     },
     enabled: !!supabase,
     staleTime: 30 * 1000,

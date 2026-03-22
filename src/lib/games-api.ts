@@ -1,34 +1,50 @@
 import type { DbGameRow } from "@/lib/game-mapper";
 import { mapDbGameToGame } from "@/lib/game-mapper";
+import { mergeGameRatings } from "@/lib/game-ratings-api";
 import type { Game } from "@/types/game";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export async function fetchGames(supabase: SupabaseClient): Promise<Game[]> {
+export type FetchGamesOptions = {
+  viewerUserId?: string | null;
+};
+
+/** added_by → profiles 만 조인. game_ratings 등으로 games↔profiles 경로가 늘어나면 PostgREST가 FK를 고르지 못함 */
+const GAMES_SELECT_WITH_ADDER =
+  "*, profiles!games_added_by_fkey(display_name)";
+
+export async function fetchGames(
+  supabase: SupabaseClient,
+  options?: FetchGamesOptions,
+): Promise<Game[]> {
   const { data, error } = await supabase
     .from("games")
-    .select("*, profiles(display_name)")
+    .select(GAMES_SELECT_WITH_ADDER)
     .order("name", { ascending: true });
 
   if (error) throw error;
 
-  return (data ?? []).map((row) =>
+  const games = (data ?? []).map((row) =>
     mapDbGameToGame(row as DbGameRow),
   );
+  return mergeGameRatings(supabase, games, options?.viewerUserId);
 }
 
 export async function fetchGameById(
   supabase: SupabaseClient,
   id: string,
+  options?: FetchGamesOptions,
 ): Promise<Game | null> {
   const { data, error } = await supabase
     .from("games")
-    .select("*, profiles(display_name)")
+    .select(GAMES_SELECT_WITH_ADDER)
     .eq("id", id)
     .maybeSingle();
 
   if (error) throw error;
   if (!data) return null;
-  return mapDbGameToGame(data as DbGameRow);
+  const game = mapDbGameToGame(data as DbGameRow);
+  const [merged] = await mergeGameRatings(supabase, [game], options?.viewerUserId);
+  return merged ?? null;
 }
 
 export function getGameGenres(gamesList: Game[]): string[] {

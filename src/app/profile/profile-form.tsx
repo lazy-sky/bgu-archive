@@ -57,15 +57,23 @@ export function ProfileForm() {
     enabled: !!supabase && !!userId,
   });
 
+  const gamesQueryKey = ["games", userId ?? "anon"] as const;
+
   const { data: games = [], isPending: gamesLoading } = useQuery({
-    queryKey: ["games"],
+    queryKey: gamesQueryKey,
     queryFn: () => {
       if (!supabase) throw new Error("데이터를 불러올 수 없습니다.");
-      return fetchGames(supabase);
+      return fetchGames(supabase, { viewerUserId: userId });
     },
     enabled: !!supabase && !!session,
     staleTime: 30 * 1000,
   });
+
+  const myRatedGames = useMemo(() => {
+    return games
+      .filter((g) => g.myRating != null)
+      .sort((a, b) => a.name.localeCompare(b.name, "ko"));
+  }, [games]);
 
   const { data: supporters = [], isPending: supportersLoading } = useQuery({
     queryKey: ["supporters"],
@@ -473,6 +481,55 @@ export function ProfileForm() {
         saveAvatarError={saveAvatarMutation.error}
         saveAvatarSuccess={avatarSaved}
       />
+
+      <section
+        className="space-y-3 rounded-xl border border-amber-900/10 bg-amber-50/40 p-4"
+        aria-labelledby="my-ratings-heading"
+      >
+        <h2
+          id="my-ratings-heading"
+          className="text-sm font-semibold text-amber-950"
+        >
+          내가 매긴 게임 별점
+        </h2>
+        {gamesLoading ? (
+          <p className="text-sm text-amber-900/70">불러오는 중…</p>
+        ) : myRatedGames.length === 0 ? (
+          <p className="text-sm text-amber-800/85">
+            아직 별점을 남긴 게임이 없습니다.{" "}
+            <Link
+              href="/games"
+              className="font-medium text-amber-900 underline underline-offset-2"
+            >
+              게임 목록
+            </Link>
+            에서 별점을 남겨 보세요.
+          </p>
+        ) : (
+          <ul className="space-y-2 text-sm" role="list">
+            {myRatedGames.map((g) => (
+              <li
+                key={g.id}
+                className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-amber-900/10 pb-2 last:border-0 last:pb-0"
+              >
+                <Link
+                  href={`/games?q=${encodeURIComponent(g.name)}`}
+                  className="min-w-0 font-medium text-amber-950 underline decoration-amber-900/25 underline-offset-2 hover:text-amber-900"
+                >
+                  {g.name}
+                </Link>
+                <span
+                  className="shrink-0 tabular-nums text-amber-900/90"
+                  aria-label={`${g.myRating}점`}
+                >
+                  {"★".repeat(g.myRating ?? 0)}
+                  <span className="ml-1 text-amber-800/70">({g.myRating}/5)</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <fieldset className="min-w-0">
         <legend className={`${labelClass} px-0`}>선호 장르</legend>

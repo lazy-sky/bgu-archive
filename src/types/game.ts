@@ -18,4 +18,10 @@ export type Game = {
   addedBy: string | null;
   /** profiles.display_name (추가한 회원) */
   addedByName: string | null;
+  /** 전체 유저 평균 별점(1–5). 아직 없으면 null */
+  ratingAvg: number | null;
+  /** 평점을 남긴 인원 수 */
+  ratingCount: number;
+  /** 현재 로그인 사용자가 매긴 별점(없으면 null) */
+  myRating: number | null;
 };

@@ -47,21 +47,25 @@ export function EditGameForm({ gameId }: Props) {
   const [notes, setNotes] = useState("");
   const [extraNotes, setExtraNotes] = useState("");
 
+  const viewerKey = session?.user.id ?? "anon";
+
   const { data: game, isPending } = useQuery({
-    queryKey: ["game", gameId],
+    queryKey: ["game", gameId, viewerKey],
     queryFn: () => {
       if (!supabase) throw new Error("데이터를 불러올 수 없습니다.");
-      return fetchGameById(supabase, gameId);
+      return fetchGameById(supabase, gameId, {
+        viewerUserId: session?.user.id,
+      });
     },
     enabled: !!supabase && !!gameId,
     staleTime: 30 * 1000,
   });
 
   const { data: allGames = [] } = useQuery({
-    queryKey: ["games"],
+    queryKey: ["games", viewerKey],
     queryFn: () => {
       if (!supabase) throw new Error("데이터를 불러올 수 없습니다.");
-      return fetchGames(supabase);
+      return fetchGames(supabase, { viewerUserId: session?.user.id });
     },
     enabled: !!supabase,
     staleTime: 30 * 1000,

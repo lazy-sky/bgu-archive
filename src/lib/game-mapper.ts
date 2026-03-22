@@ -53,5 +53,8 @@ export function mapDbGameToGame(row: DbGameRow): Game {
     extraNotes: row.extra_notes,
     addedBy: row.added_by ?? null,
     addedByName: pickProfile(row.profiles)?.display_name ?? null,
+    ratingAvg: null,
+    ratingCount: 0,
+    myRating: null,
   };
 }

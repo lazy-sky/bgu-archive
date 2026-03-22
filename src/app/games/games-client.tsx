@@ -3,15 +3,83 @@
 import { Select } from "@/components/ui/select";
 import { RuleMasterCollapsible } from "@/components/rule-master-collapsible";
 import { useAuth, useSupabase } from "@/components/auth-provider";
+import {
+  deleteGameRating,
+  upsertGameRating,
+} from "@/lib/game-ratings-api";
 import { fetchGames, getGameGenres } from "@/lib/games-api";
 import { fetchMembers } from "@/lib/members-api";
 import { formatPlayerRange } from "@/lib/format-players";
 import { buildRuleMastersByGameName } from "@/lib/rule-master";
 import { sortGames, type GameSortMode } from "@/lib/sort-games";
 import type { Game } from "@/types/game";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+
+function formatAvgRating(g: Game): string {
+  if (g.ratingAvg == null || g.ratingCount === 0) return "—";
+  return `${g.ratingAvg.toFixed(1)} (${g.ratingCount}명)`;
+}
+
+function GameRatingBlock({
+  game,
+  userId,
+  disabled,
+  onSetRating,
+  onClearRating,
+}: {
+  game: Game;
+  userId: string | null;
+  disabled: boolean;
+  onSetRating: (gameId: string, rating: number) => void;
+  onClearRating: (gameId: string) => void;
+}) {
+  const avgLine = formatAvgRating(game);
+  return (
+    <div className="space-y-1.5 text-xs">
+      <div className="tabular-nums text-amber-900/90">
+        <span className="text-amber-800/60">평균 </span>
+        {avgLine}
+      </div>
+      {userId ? (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="text-amber-800/60">내 별점</span>
+          <span className="inline-flex gap-0.5" role="group" aria-label="내 별점">
+            {[1, 2, 3, 4, 5].map((n) => {
+              const filled = game.myRating != null && n <= game.myRating;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => onSetRating(game.id, n)}
+                  className="min-h-[1.75rem] min-w-[1.5rem] rounded px-0.5 text-base leading-none text-amber-700 transition hover:bg-amber-100/90 disabled:opacity-50"
+                  aria-pressed={filled}
+                  aria-label={`${n}점`}
+                >
+                  {filled ? "★" : "☆"}
+                </button>
+              );
+            })}
+          </span>
+          {game.myRating != null ? (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => onClearRating(game.id)}
+              className="text-amber-700/80 underline decoration-amber-800/30 underline-offset-2 hover:text-amber-950 disabled:opacity-50"
+            >
+              지우기
+            </button>
+          ) : null}
+        </div>
+      ) : (
+        <p className="text-amber-800/55">로그인하면 별점을 남길 수 있어요.</p>
+      )}
+    </div>
+  );
+}
 
 const DIFFICULTY_LEVELS = [1, 2, 3, 4] as const;
 
@@ -40,16 +108,49 @@ function filterGames(
 export function GamesClient() {
   const supabase = useSupabase();
   const { session } = useAuth();
+  const queryClient = useQueryClient();
+  const viewerKey = session?.user.id ?? "anon";
 
   const { data: games = [], isPending, error } = useQuery({
-    queryKey: ["games"],
+    queryKey: ["games", viewerKey],
     queryFn: () => {
       if (!supabase) throw new Error("데이터를 불러올 수 없습니다.");
-      return fetchGames(supabase);
+      return fetchGames(supabase, { viewerUserId: session?.user.id });
     },
     enabled: !!supabase,
     staleTime: 30 * 1000,
   });
+
+  const ratingMutation = useMutation({
+    mutationFn: async ({
+      gameId,
+      rating,
+    }: {
+      gameId: string;
+      rating: number;
+    }) => {
+      if (!supabase || !session?.user.id) throw new Error("로그인이 필요합니다.");
+      await upsertGameRating(supabase, session.user.id, gameId, rating);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+    },
+  });
+
+  const clearRatingMutation = useMutation({
+    mutationFn: async ({ gameId }: { gameId: string }) => {
+      if (!supabase || !session?.user.id) throw new Error("로그인이 필요합니다.");
+      await deleteGameRating(supabase, session.user.id, gameId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+    },
+  });
+
+  const ratingBusy =
+    ratingMutation.isPending || clearRatingMutation.isPending;
+  const ratingError =
+    ratingMutation.error ?? clearRatingMutation.error;
 
   const { data: members = [], isPending: membersPending } = useQuery({
     queryKey: ["members"],
@@ -65,23 +166,6 @@ export function GamesClient() {
     () => buildRuleMastersByGameName(members),
     [members],
   );
-
-  if (!supabase) {
-    return (
-      <p className="rounded-lg border border-amber-900/15 bg-amber-50/80 px-4 py-3 text-sm text-amber-900">
-        지금은 게임 목록을 불러올 수 없습니다. 잠시 후 다시 시도하거나 관리자에게
-        문의해 주세요.
-      </p>
-    );
-  }
-
-  if (error) {
-    return (
-      <p className="text-sm text-red-700" role="alert">
-        {(error as Error).message}
-      </p>
-    );
-  }
 
   const [q, setQ] = useState("");
   const [genre, setGenre] = useState("");
@@ -100,6 +184,23 @@ export function GamesClient() {
     () => sortGames(filtered, sortMode),
     [filtered, sortMode],
   );
+
+  if (!supabase) {
+    return (
+      <p className="rounded-lg border border-amber-900/15 bg-amber-50/80 px-4 py-3 text-sm text-amber-900">
+        지금은 게임 목록을 불러올 수 없습니다. 잠시 후 다시 시도하거나 관리자에게
+        문의해 주세요.
+      </p>
+    );
+  }
+
+  if (error) {
+    return (
+      <p className="text-sm text-red-700" role="alert">
+        {(error as Error).message}
+      </p>
+    );
+  }
 
   function toggleDifficultyLevel(level: number) {
     setDifficultyLevels((prev) => {
@@ -144,6 +245,13 @@ export function GamesClient() {
       </div>
 
       <div className="flex flex-col gap-4 rounded-xl border border-amber-900/10 bg-white/60 p-4 shadow-sm">
+        {ratingError ? (
+          <p className="text-sm text-red-700" role="alert">
+            {ratingError instanceof Error
+              ? ratingError.message
+              : "별점을 저장하지 못했습니다."}
+          </p>
+        ) : null}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-amber-900/70">검색</span>
@@ -195,6 +303,8 @@ export function GamesClient() {
               <option value="difficulty_asc">난이도 낮은순</option>
               <option value="players_desc">인원수 많은 순</option>
               <option value="players_asc">인원수 적은 순</option>
+              <option value="rating_desc">유저 평점 높은 순</option>
+              <option value="rating_asc">유저 평점 낮은 순</option>
             </Select>
           </label>
         </div>
@@ -279,6 +389,15 @@ export function GamesClient() {
                 <div className="flex flex-wrap gap-x-3 gap-y-1 text-amber-800/85">
                   <span>인원 {formatPlayerRange(g)}</span>
                 </div>
+                <GameRatingBlock
+                  game={g}
+                  userId={session?.user.id ?? null}
+                  disabled={ratingBusy}
+                  onSetRating={(id, rating) =>
+                    ratingMutation.mutate({ gameId: id, rating })
+                  }
+                  onClearRating={(id) => clearRatingMutation.mutate({ gameId: id })}
+                />
                 <div>
                   {g.beginnerFriendly ? (
                     <span className="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-900">
@@ -322,7 +441,8 @@ export function GamesClient() {
         <table className="w-full table-fixed border-collapse text-left text-sm [&_td]:align-middle [&_th]:align-middle">
           <colgroup>
             <col className="w-10" />
-            <col className="w-[18%]" />
+            <col className="w-[16%]" />
+            <col className="w-[8.5rem]" />
             <col className="w-[3.5rem]" />
             <col className="w-[9%]" />
             <col className="w-[6.75rem]" />
@@ -337,6 +457,9 @@ export function GamesClient() {
                 번호
               </th>
               <th className="px-2 py-2.5 font-medium">게임명</th>
+              <th className="px-2 py-2.5 text-xs font-medium leading-tight">
+                유저 평점
+              </th>
               <th className="whitespace-nowrap px-3 py-2.5 text-center font-medium">
                 난이도
               </th>
@@ -378,6 +501,19 @@ export function GamesClient() {
                         </Link>
                       ) : null}
                     </div>
+                  </td>
+                  <td className="min-w-0 px-1 py-2 align-top text-amber-900/90">
+                    <GameRatingBlock
+                      game={g}
+                      userId={session?.user.id ?? null}
+                      disabled={ratingBusy}
+                      onSetRating={(id, rating) =>
+                        ratingMutation.mutate({ gameId: id, rating })
+                      }
+                      onClearRating={(id) =>
+                        clearRatingMutation.mutate({ gameId: id })
+                      }
+                    />
                   </td>
                   <td className="px-2 py-2.5 text-center text-amber-900/90">
                     {g.difficulty ?? "—"}

@@ -5,7 +5,9 @@ export type GameSortMode =
   | "difficulty_desc"
   | "difficulty_asc"
   | "players_desc"
-  | "players_asc";
+  | "players_asc"
+  | "rating_desc"
+  | "rating_asc";
 
 function toNum(v: number | string | null): number | null {
   if (v == null || v === "") return null;
@@ -79,6 +81,18 @@ export function sortGames(list: Game[], mode: GameSortMode): Game[] {
       }
       case "players_asc": {
         c = sortKeyPlayersAsc(a) - sortKeyPlayersAsc(b);
+        break;
+      }
+      case "rating_desc": {
+        const ka = a.ratingAvg ?? -1;
+        const kb = b.ratingAvg ?? -1;
+        c = kb - ka;
+        break;
+      }
+      case "rating_asc": {
+        const ka = a.ratingAvg ?? 999;
+        const kb = b.ratingAvg ?? 999;
+        c = ka - kb;
         break;
       }
       default:

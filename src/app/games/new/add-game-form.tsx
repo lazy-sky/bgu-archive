@@ -28,11 +28,13 @@ export function AddGameForm() {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
+  const viewerKey = session?.user.id ?? "anon";
+
   const { data: games = [] } = useQuery({
-    queryKey: ["games"],
+    queryKey: ["games", viewerKey],
     queryFn: () => {
       if (!supabase) throw new Error("Supabase 미연결");
-      return fetchGames(supabase);
+      return fetchGames(supabase, { viewerUserId: session?.user.id });
     },
     enabled: !!supabase,
     staleTime: 30 * 1000,
