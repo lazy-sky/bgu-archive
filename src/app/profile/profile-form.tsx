@@ -2,7 +2,12 @@
 
 import { useAuth, useSupabase } from "@/components/auth-provider";
 import { fetchGames, getGameGenres } from "@/lib/games-api";
+import {
+  canSaveLoreleiAvatar,
+  LORELEI_SAVE_DENIED_MESSAGE,
+} from "@/lib/lorelei-eligibility";
 import { PLAY_STYLE_OPTIONS } from "@/lib/profile-picklists";
+import { fetchSupporters } from "@/lib/supporters-api";
 import { AvatarEditor } from "@/components/avatar-editor";
 import { avatarConfigForSave, DEFAULT_AVATAR } from "@/lib/avatar-config";
 import { fetchProfile } from "@/lib/profile-api";
@@ -62,6 +67,16 @@ export function ProfileForm() {
     staleTime: 30 * 1000,
   });
 
+  const { data: supporters = [], isPending: supportersLoading } = useQuery({
+    queryKey: ["supporters"],
+    queryFn: () => {
+      if (!supabase) throw new Error("데이터를 불러올 수 없습니다.");
+      return fetchSupporters(supabase);
+    },
+    enabled: !!supabase && !!session,
+    staleTime: 60 * 1000,
+  });
+
   const orphanedRuleNames = useMemo(() => {
     if (!profile) return [];
     const names = games.map((g) => g.name);
@@ -71,6 +86,24 @@ export function ProfileForm() {
   }, [profile, games]);
 
   const genreOptions = useMemo(() => getGameGenres(games), [games]);
+
+  const displayNameForLorelei = useMemo(
+    () => (profile?.display_name ?? displayName).trim(),
+    [profile?.display_name, displayName],
+  );
+
+  const canSaveLorelei = useMemo(
+    () => canSaveLoreleiAvatar(displayNameForLorelei, supporters),
+    [displayNameForLorelei, supporters],
+  );
+
+  const loreleiSaveAllowed = useMemo(
+    () =>
+      avatarConfig.style !== "lorelei" ||
+      supportersLoading ||
+      canSaveLorelei,
+    [avatarConfig.style, supportersLoading, canSaveLorelei],
+  );
 
   const orphanedGenreNames = useMemo(() => {
     if (!profile) return [];
@@ -257,6 +290,13 @@ export function ProfileForm() {
   const saveAvatarMutation = useMutation({
     mutationFn: async () => {
       if (!supabase || !userId) throw new Error("로그인 필요");
+      if (avatarConfig.style === "lorelei") {
+        const ok = canSaveLoreleiAvatar(
+          (profile?.display_name ?? displayName).trim(),
+          supporters,
+        );
+        if (!ok) throw new Error(LORELEI_SAVE_DENIED_MESSAGE);
+      }
       const { error } = await supabase
         .from("profiles")
         .update({ avatar_config: avatarConfigForSave(avatarConfig) })
@@ -424,6 +464,7 @@ export function ProfileForm() {
         value={avatarConfig}
         onChange={setAvatarConfig}
         seedFallback={userId}
+        loreleiSaveAllowed={loreleiSaveAllowed}
         onSaveAvatar={() => {
           setAvatarSaved(false);
           saveAvatarMutation.mutate();

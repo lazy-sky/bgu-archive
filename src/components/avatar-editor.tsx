@@ -18,6 +18,7 @@ import {
   type AvatarConfig,
   type AvatarStyleId,
 } from "@/types/avatar";
+import Link from "next/link";
 
 type Props = {
   value: AvatarConfig;
@@ -27,6 +28,8 @@ type Props = {
   saveAvatarError?: unknown;
   saveAvatarSuccess?: boolean;
   seedFallback?: string;
+  /** false면 로렐라이 선택 시 후원 안내 표시(저장 제한은 프로필에서 처리) */
+  loreleiSaveAllowed?: boolean;
 };
 
 export function AvatarEditor({
@@ -37,6 +40,7 @@ export function AvatarEditor({
   saveAvatarError,
   saveAvatarSuccess,
   seedFallback,
+  loreleiSaveAllowed = true,
 }: Props) {
   function setStyle(next: AvatarStyleId) {
     if (next === value.style) return;
@@ -64,6 +68,29 @@ export function AvatarEditor({
           ))}
         </Select>
       </label>
+
+      {value.style === "lorelei" && !loreleiSaveAllowed ? (
+        <div
+          className="mt-3 rounded-lg border border-amber-800/20 bg-amber-100/50 px-3 py-2 text-xs leading-relaxed text-amber-950"
+          role="status"
+        >
+          <p>
+            <strong className="font-semibold">로렐라이</strong>는 후원 감사
+            명단에 이름이 올라가고 금액이 표시된 경우에만 저장할 수 있습니다.
+            미리보기·옵션 조절은 자유롭게 해 볼 수 있어요.
+          </p>
+          <p className="mt-1.5 text-amber-900/85">
+            <Link
+              href="/donate"
+              className="font-medium text-amber-900 underline decoration-amber-800/35 underline-offset-2"
+            >
+              후원하기
+            </Link>
+            · 저장 시에는 다른 스타일을 선택하거나, 후원 후 표시 이름을 명단과
+            맞춰 주세요.
+          </p>
+        </div>
+      ) : null}
 
       <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
         <div className="flex flex-col items-center gap-2">
