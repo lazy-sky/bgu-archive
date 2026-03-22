@@ -4,7 +4,8 @@ export type Game = {
   id: string;
   name: string;
   difficulty: number | null;
-  genre: string;
+  /** 장르 태그(다중) */
+  genres: string[];
   /** 최소 인원(명). null이면 미기재 */
   minPlayers: number | null;
   maxPlayersRaw: string | number | null;

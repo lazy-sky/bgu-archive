@@ -2,7 +2,9 @@
 
 import { useAuth } from "@/components/auth-provider";
 import { Select } from "@/components/ui/select";
-import { fetchGameById } from "@/lib/games-api";
+import { GameGenreMultiPicker } from "@/components/game-genre-multi-picker";
+import { fetchGameById, fetchGames } from "@/lib/games-api";
+import { getGenreOptionsForPicker } from "@/lib/game-genre-tags";
 import { fetchProfile } from "@/lib/profile-api";
 import { parseMinPlayersInput } from "@/lib/parse-min-players";
 import { parseMaxPlayersInput } from "@/lib/parse-max-players";
@@ -10,7 +12,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Game } from "@/types/game";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = { gameId: string };
 
@@ -38,7 +40,7 @@ export function EditGameForm({ gameId }: Props) {
 
   const [name, setName] = useState("");
   const [difficulty, setDifficulty] = useState("1");
-  const [genre, setGenre] = useState("");
+  const [genres, setGenres] = useState<string[]>([]);
   const [minPlayers, setMinPlayers] = useState("");
   const [maxDigits, setMaxDigits] = useState("");
   const [maxIsMinPlus, setMaxIsMinPlus] = useState(false);
@@ -56,6 +58,20 @@ export function EditGameForm({ gameId }: Props) {
     staleTime: 30 * 1000,
   });
 
+  const { data: allGames = [] } = useQuery({
+    queryKey: ["games"],
+    queryFn: () => {
+      if (!supabase) throw new Error("데이터를 불러올 수 없습니다.");
+      return fetchGames(supabase);
+    },
+    enabled: !!supabase,
+    staleTime: 30 * 1000,
+  });
+  const genreOptions = useMemo(
+    () => getGenreOptionsForPicker(allGames),
+    [allGames],
+  );
+
   const { data: myProfile } = useQuery({
     queryKey: ["profile", session?.user.id],
     queryFn: async () => {
@@ -71,7 +87,7 @@ export function EditGameForm({ gameId }: Props) {
     if (!game) return;
     setName(game.name);
     setDifficulty(String(game.difficulty ?? 1));
-    setGenre(game.genre);
+    setGenres([...game.genres]);
     setMinPlayers(
       game.minPlayers != null ? String(game.minPlayers) : "",
     );
@@ -97,7 +113,7 @@ export function EditGameForm({ gameId }: Props) {
         .update({
           name: name.trim(),
           difficulty: Number(difficulty),
-          genre: genre.trim(),
+          genres,
           min_players: minP,
           max_players_raw: trimmedMax || null,
           max_players_kind: parsed.maxPlayersKind,
@@ -187,31 +203,33 @@ export function EditGameForm({ gameId }: Props) {
           className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
         />
       </label>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block text-sm">
-          <span className="text-amber-900/70">난이도 (1–4)</span>
-          <Select
-            className="mt-1"
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-          >
-            {[1, 2, 3, 4].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </Select>
-        </label>
-        <label className="block text-sm">
-          <span className="text-amber-900/70">장르</span>
-          <input
-            value={genre}
-            onChange={(e) => setGenre(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
-            placeholder="예: 파티"
+      <label className="block text-sm sm:max-w-xs">
+        <span className="text-amber-900/70">난이도 (1–4)</span>
+        <Select
+          className="mt-1"
+          value={difficulty}
+          onChange={(e) => setDifficulty(e.target.value)}
+        >
+          {[1, 2, 3, 4].map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
+        </Select>
+      </label>
+      <fieldset className="min-w-0">
+        <legend className="text-sm text-amber-900/70">장르</legend>
+        <p className="mt-1 text-xs text-amber-800/75">
+          목록에서 태그를 고릅니다. (여러 개 선택 가능)
+        </p>
+        <div className="mt-2">
+          <GameGenreMultiPicker
+            value={genres}
+            onChange={setGenres}
+            options={genreOptions}
           />
-        </label>
-      </div>
+        </div>
+      </fieldset>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="text-amber-900/70">최소 인원</span>

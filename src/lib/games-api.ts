@@ -34,7 +34,10 @@ export async function fetchGameById(
 export function getGameGenres(gamesList: Game[]): string[] {
   const set = new Set<string>();
   for (const g of gamesList) {
-    if (g.genre) set.add(g.genre);
+    for (const x of g.genres) {
+      const t = x?.trim();
+      if (t) set.add(t);
+    }
   }
   return [...set].sort((a, b) => a.localeCompare(b, "ko"));
 }

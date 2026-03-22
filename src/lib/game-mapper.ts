@@ -4,7 +4,7 @@ export type DbGameRow = {
   id: string;
   name: string;
   difficulty: number | null;
-  genre: string;
+  genres: string[];
   /** DB 컬럼명. 과거 오타 `min_player`만 있는 DB는 마이그레이션으로 정리 */
   min_players: number | null;
   min_player?: number | null;
@@ -43,7 +43,7 @@ export function mapDbGameToGame(row: DbGameRow): Game {
     id: row.id,
     name: row.name,
     difficulty: row.difficulty,
-    genre: row.genre,
+    genres: Array.isArray(row.genres) ? row.genres : [],
     minPlayers: row.min_players ?? row.min_player ?? null,
     maxPlayersRaw: row.max_players_raw,
     maxPlayersKind: row.max_players_kind,

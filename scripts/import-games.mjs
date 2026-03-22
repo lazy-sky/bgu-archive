@@ -62,7 +62,7 @@ for (let i = 1; i < rows.length; i++) {
     id: games.length + 1,
     name,
     difficulty: diff != null ? Number(diff) : null,
-    genre,
+    genres: genre ? [genre] : [],
     maxPlayersRaw: maxRaw,
     maxPlayersKind: parsed.kind,
     maxPlayers: parsed.value,

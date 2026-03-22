@@ -1,13 +1,16 @@
 "use client";
 
 import { useAuth } from "@/components/auth-provider";
+import { GameGenreMultiPicker } from "@/components/game-genre-multi-picker";
 import { Select } from "@/components/ui/select";
+import { fetchGames } from "@/lib/games-api";
+import { getGenreOptionsForPicker } from "@/lib/game-genre-tags";
 import { parseMinPlayersInput } from "@/lib/parse-min-players";
 import { parseMaxPlayersInput } from "@/lib/parse-max-players";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export function AddGameForm() {
   const { supabase, session, loading } = useAuth();
@@ -15,7 +18,7 @@ export function AddGameForm() {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [difficulty, setDifficulty] = useState("1");
-  const [genre, setGenre] = useState("");
+  const [genres, setGenres] = useState<string[]>([]);
   const [minPlayers, setMinPlayers] = useState("");
   const [maxDigits, setMaxDigits] = useState("");
   const [maxIsMinPlus, setMaxIsMinPlus] = useState(false);
@@ -24,6 +27,20 @@ export function AddGameForm() {
   const [extraNotes, setExtraNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  const { data: games = [] } = useQuery({
+    queryKey: ["games"],
+    queryFn: () => {
+      if (!supabase) throw new Error("Supabase 미연결");
+      return fetchGames(supabase);
+    },
+    enabled: !!supabase,
+    staleTime: 30 * 1000,
+  });
+  const genreOptions = useMemo(
+    () => getGenreOptionsForPicker(games),
+    [games],
+  );
 
   if (loading) {
     return <p className="text-amber-900/70">세션 확인 중…</p>;
@@ -66,7 +83,7 @@ export function AddGameForm() {
     const { error: err } = await supabase.from("games").insert({
       name: name.trim(),
       difficulty: Number(difficulty),
-      genre: genre.trim(),
+      genres,
       min_players: minP,
       max_players_raw: trimmedMax || null,
       max_players_kind: parsed.maxPlayersKind,
@@ -100,31 +117,33 @@ export function AddGameForm() {
           className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
         />
       </label>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block text-sm">
-          <span className="text-amber-900/70">난이도 (1–4)</span>
-          <Select
-            className="mt-1"
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-          >
-            {[1, 2, 3, 4].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </Select>
-        </label>
-        <label className="block text-sm">
-          <span className="text-amber-900/70">장르</span>
-          <input
-            value={genre}
-            onChange={(e) => setGenre(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-amber-900/15 px-3 py-2 text-amber-950"
-            placeholder="예: 파티"
+      <label className="block text-sm sm:max-w-xs">
+        <span className="text-amber-900/70">난이도 (1–4)</span>
+        <Select
+          className="mt-1"
+          value={difficulty}
+          onChange={(e) => setDifficulty(e.target.value)}
+        >
+          {[1, 2, 3, 4].map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
+        </Select>
+      </label>
+      <fieldset className="min-w-0">
+        <legend className="text-sm text-amber-900/70">장르</legend>
+        <p className="mt-1 text-xs text-amber-800/75">
+          목록에서 태그를 고릅니다. (여러 개 선택 가능)
+        </p>
+        <div className="mt-2">
+          <GameGenreMultiPicker
+            value={genres}
+            onChange={setGenres}
+            options={genreOptions}
           />
-        </label>
-      </div>
+        </div>
+      </fieldset>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="text-amber-900/70">최소 인원</span>

@@ -26,7 +26,7 @@ function filterGames(
   const needle = q.trim().toLowerCase();
   return list.filter((g) => {
     if (needle && !g.name.toLowerCase().includes(needle)) return false;
-    if (genre && g.genre !== genre) return false;
+    if (genre && !g.genres.includes(genre)) return false;
     if (beginner === "yes" && !g.beginnerFriendly) return false;
     if (beginner === "no" && g.beginnerFriendly) return false;
     if (difficultyLevels.size > 0) {
@@ -286,7 +286,9 @@ export function GamesClient() {
                   <span>
                     난이도 <strong className="font-medium">{g.difficulty ?? "—"}</strong>
                   </span>
-                  <span className="text-amber-800/80">· {g.genre}</span>
+                  <span className="text-amber-800/80">
+                    · {g.genres.length ? g.genres.join(" · ") : "—"}
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-x-3 gap-y-1 text-amber-800/85">
                   <span>인원 {formatPlayerRange(g)}</span>
@@ -399,7 +401,7 @@ export function GamesClient() {
                   </td>
                   <td className="min-w-0 px-2 py-2.5 align-top text-amber-900/90">
                     <span className="break-words [overflow-wrap:anywhere]">
-                      {g.genre}
+                      {g.genres.length ? g.genres.join(" · ") : "—"}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-1 py-2.5 text-center text-xs tabular-nums text-amber-800/80">

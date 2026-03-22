@@ -35,6 +35,14 @@ function sqlInt(n) {
   return Number.isNaN(x) ? "NULL" : String(Math.trunc(x));
 }
 
+/** text[] 리터럴 */
+function sqlTextArray(arr) {
+  const a = Array.isArray(arr) ? arr : [];
+  if (a.length === 0) return "'{}'::text[]";
+  const esc = (s) => String(s).replace(/'/g, "''");
+  return `ARRAY[${a.map((x) => `'${esc(x)}'`).join(",")}]::text[]`;
+}
+
 function addedByExpression(g) {
   if (isGameAddedByExcludedFromKim(g.name)) {
     return "NULL";
@@ -57,7 +65,7 @@ function mapRow(g) {
       ? "NULL"
       : sqlLiteral(String(g.maxPlayers));
 
-  return `  (${sqlLiteral(g.name)}, ${sqlInt(g.difficulty)}, ${sqlTextNotEmpty(g.genre)}, ${sqlInt(minPlayersFromJson(g))}, ${raw}, ${sqlLiteral(g.maxPlayersKind)}, ${val}, ${g.beginnerFriendly ? "true" : "false"}, ${sqlTextNotEmpty(g.notes)}, ${sqlTextNotEmpty(g.extraNotes)}, ${addedByExpression(g)})`;
+  return `  (${sqlLiteral(g.name)}, ${sqlInt(g.difficulty)}, ${sqlTextArray(g.genres)}, ${sqlInt(minPlayersFromJson(g))}, ${raw}, ${sqlLiteral(g.maxPlayersKind)}, ${val}, ${g.beginnerFriendly ? "true" : "false"}, ${sqlTextNotEmpty(g.notes)}, ${sqlTextNotEmpty(g.extraNotes)}, ${addedByExpression(g)})`;
 }
 
 function main() {
@@ -81,7 +89,7 @@ DELETE FROM public.games;
 INSERT INTO public.games (
   name,
   difficulty,
-  genre,
+  genres,
   min_players,
   max_players_raw,
   max_players_kind,

@@ -41,6 +41,14 @@ function minPlayersFromJson(g) {
   return Math.floor(n);
 }
 
+function genresFromJson(g) {
+  if (Array.isArray(g.genres)) return g.genres;
+  if (g.genre != null && String(g.genre).trim() !== "") {
+    return [String(g.genre).trim()];
+  }
+  return [];
+}
+
 function mapJsonGame(g, addedBy) {
   const rawStr =
     g.maxPlayersRaw == null ? "" : String(g.maxPlayersRaw);
@@ -52,7 +60,7 @@ function mapJsonGame(g, addedBy) {
   return {
     name: g.name,
     difficulty: g.difficulty,
-    genre: g.genre ?? "",
+    genres: genresFromJson(g),
     min_players: minPlayersFromJson(g),
     max_players_raw: rawStr || null,
     max_players_kind: g.maxPlayersKind,

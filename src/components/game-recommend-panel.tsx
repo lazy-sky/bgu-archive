@@ -177,7 +177,9 @@ export function GameRecommendPanel({
                       </p>
                       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-amber-900/90">
                         <span>난이도 {g.difficulty ?? "—"}</span>
-                        <span className="text-amber-800/80">{g.genre}</span>
+                        <span className="text-amber-800/80">
+                          {g.genres.length ? g.genres.join(" · ") : "—"}
+                        </span>
                         <span>인원 {formatPlayerRange(g)}</span>
                       </div>
                       <div className="mt-2 text-sm">
@@ -235,7 +237,9 @@ export function GameRecommendPanel({
                         <td className="px-3 py-2 text-amber-900/90">
                           {g.difficulty ?? "—"}
                         </td>
-                        <td className="px-3 py-2 text-amber-900/90">{g.genre}</td>
+                        <td className="px-3 py-2 text-amber-900/90">
+                          {g.genres.length ? g.genres.join(" · ") : "—"}
+                        </td>
                         <td className="whitespace-nowrap px-3 py-2 tabular-nums text-amber-800/80">
                           {formatPlayerRange(g)}
                         </td>

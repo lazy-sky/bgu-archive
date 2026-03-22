@@ -25,7 +25,7 @@ create table if not exists public.games (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   difficulty int,
-  genre text not null default '',
+  genres text[] not null default '{}',
   min_players int null,
   max_players_raw text,
   max_players_kind text not null
@@ -38,7 +38,7 @@ create table if not exists public.games (
   created_at timestamptz not null default now()
 );
 
-create index if not exists games_games_genre_idx on public.games (genre);
+create index if not exists games_genres_gin_idx on public.games using gin (genres);
 create index if not exists games_added_by_idx on public.games (added_by);
 
 alter table public.profiles enable row level security;
