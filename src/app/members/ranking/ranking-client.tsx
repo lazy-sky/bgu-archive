@@ -1,5 +1,6 @@
 "use client";
 
+import { MemberProfileDialog } from "@/components/member-profile-dialog";
 import { MemberAvatar } from "@/components/member-avatar";
 import { useSupabase } from "@/components/auth-provider";
 import { formatMbtiDisplay } from "@/lib/format-mbti";
@@ -68,6 +69,7 @@ const MEDAL_META: Record<
 export function RankingClient() {
   const supabase = useSupabase();
   const [tab, setTab] = useState<RankingTabId>("rule_master");
+  const [profileMember, setProfileMember] = useState<Member | null>(null);
 
   const { data: members = [], isPending, error } = useQuery({
     queryKey: ["members"],
@@ -167,6 +169,9 @@ export function RankingClient() {
           </h2>
           <p className="mb-4 text-sm text-amber-800/80">
             「겜잘알」은 프로필의「룰마스터 가능한 게임」에 체크해 둔 개수 순입니다.
+            <span className="mt-1 block text-amber-800/65">
+              행을 누르면 회원 프로필이 열립니다.
+            </span>
           </p>
           <ol className="flex flex-col gap-2">
             {ruleMasterRanking.map((m, index) => {
@@ -181,57 +186,60 @@ export function RankingClient() {
                 : "border border-amber-900/10 bg-white/80 shadow-sm";
 
               return (
-                <li
-                  key={m.id}
-                  className={`flex items-center gap-3 rounded-xl px-4 py-3 sm:gap-4 sm:px-5 sm:py-3.5 ${rowClass}`}
-                >
-                  <div
-                    className={`flex w-12 shrink-0 flex-col items-center justify-center gap-0.5 sm:w-14`}
+                <li key={m.id} className="list-none">
+                  <button
+                    type="button"
+                    onClick={() => setProfileMember(m)}
+                    className={`flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left transition hover:brightness-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/55 focus-visible:ring-offset-2 focus-visible:ring-offset-amber-50/0 sm:gap-4 sm:px-5 sm:py-3.5 ${rowClass}`}
                   >
-                    {medalRow ? (
-                      <span
-                        className="text-2xl leading-none"
-                        role="img"
-                        aria-label={medalRow.label}
-                      >
-                        {medalRow.emoji}
-                      </span>
-                    ) : null}
-                    <span
-                      className={`text-center text-base font-bold tabular-nums sm:text-lg ${
-                        topThree
-                          ? "text-amber-950"
-                          : "text-amber-800/75"
-                      }`}
-                      aria-label={`${rank}위`}
+                    <div
+                      className={`flex w-12 shrink-0 flex-col items-center justify-center gap-0.5 sm:w-14`}
                     >
-                      {rank}
-                    </span>
-                  </div>
-                  <MemberAvatar
-                    config={m.avatarConfig}
-                    size={44}
-                    seedFallback={m.id}
-                    className={`shrink-0 ${
-                      topThree
-                        ? "ring-2 ring-amber-900/20"
-                        : "ring-amber-900/10"
-                    }`}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-amber-950">
-                      {m.displayName}
-                    </p>
-                    <p className="text-xs text-amber-800/65">
-                      MBTI {formatMbtiDisplay(m.mbti)}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <span className="text-lg font-semibold tabular-nums text-amber-950">
-                      {count}
-                    </span>
-                    <span className="ml-1 text-xs text-amber-800/70">게임</span>
-                  </div>
+                      {medalRow ? (
+                        <span
+                          className="text-2xl leading-none"
+                          role="img"
+                          aria-label={medalRow.label}
+                        >
+                          {medalRow.emoji}
+                        </span>
+                      ) : null}
+                      <span
+                        className={`text-center text-base font-bold tabular-nums sm:text-lg ${
+                          topThree
+                            ? "text-amber-950"
+                            : "text-amber-800/75"
+                        }`}
+                        aria-label={`${rank}위`}
+                      >
+                        {rank}
+                      </span>
+                    </div>
+                    <MemberAvatar
+                      config={m.avatarConfig}
+                      size={44}
+                      seedFallback={m.id}
+                      className={`shrink-0 ${
+                        topThree
+                          ? "ring-2 ring-amber-900/20"
+                          : "ring-amber-900/10"
+                      }`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-amber-950">
+                        {m.displayName}
+                      </p>
+                      <p className="text-xs text-amber-800/65">
+                        MBTI {formatMbtiDisplay(m.mbti)}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <span className="text-lg font-semibold tabular-nums text-amber-950">
+                        {count}
+                      </span>
+                      <span className="ml-1 text-xs text-amber-800/70">게임</span>
+                    </div>
+                  </button>
                 </li>
               );
             })}
@@ -247,6 +255,12 @@ export function RankingClient() {
           ← 회원 목록
         </Link>
       </p>
+
+      <MemberProfileDialog
+        member={profileMember}
+        open={profileMember != null}
+        onClose={() => setProfileMember(null)}
+      />
     </div>
   );
 }
