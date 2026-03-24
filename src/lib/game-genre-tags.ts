@@ -7,6 +7,7 @@ import type { Game } from "@/types/game";
 export const GAME_GENRE_TAGS = [
   "경매",
   "기타",
+  "낱말게임",
   "덱 빌딩",
   "마피아",
   "베팅",
