@@ -1,3 +1,4 @@
+import { normalizeMbti } from "@/lib/format-mbti";
 import { parseAvatarConfig } from "@/lib/avatar-config";
 import type { AvatarConfig } from "@/types/avatar";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -31,7 +32,7 @@ export async function fetchProfile(
   return {
     display_name: data.display_name,
     is_admin: Boolean(data.is_admin),
-    mbti: data.mbti ?? "",
+    mbti: normalizeMbti(data.mbti),
     favorite_genres: data.favorite_genres ?? [],
     favorite_game_types: data.favorite_game_types ?? [],
     bio: data.bio ?? "",

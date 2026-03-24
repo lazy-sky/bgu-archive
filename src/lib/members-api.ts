@@ -1,3 +1,4 @@
+import { normalizeMbti } from "@/lib/format-mbti";
 import { parseAvatarConfig } from "@/lib/avatar-config";
 import type { Member } from "@/types/member";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -24,7 +25,7 @@ export async function fetchMembers(supabase: SupabaseClient): Promise<Member[]> 
   return (data as ProfileRow[]).map((row) => ({
     id: row.id,
     displayName: row.display_name,
-    mbti: row.mbti,
+    mbti: normalizeMbti(row.mbti),
     favoriteGenres: row.favorite_genres ?? [],
     favoriteGameTypes: row.favorite_game_types ?? [],
     bio: row.bio,

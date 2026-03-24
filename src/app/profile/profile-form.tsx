@@ -10,6 +10,7 @@ import { PLAY_STYLE_OPTIONS } from "@/lib/profile-picklists";
 import { fetchSupporters } from "@/lib/supporters-api";
 import { AvatarEditor } from "@/components/avatar-editor";
 import { avatarConfigForSave, DEFAULT_AVATAR } from "@/lib/avatar-config";
+import { normalizeMbti } from "@/lib/format-mbti";
 import { fetchProfile } from "@/lib/profile-api";
 import type { AvatarConfig } from "@/types/avatar";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -221,7 +222,7 @@ export function ProfileForm() {
         .from("profiles")
         .update({
           display_name: trimmedName,
-          mbti: mbti.trim(),
+          mbti: normalizeMbti(mbti),
           bio: bio.trim(),
         })
         .eq("id", userId);
@@ -422,7 +423,7 @@ export function ProfileForm() {
             id="mbti"
             type="text"
             value={mbti}
-            onChange={(e) => setMbti(e.target.value)}
+            onChange={(e) => setMbti(e.target.value.toUpperCase())}
             placeholder="예: ENFP"
             className={inputClass}
             maxLength={32}

@@ -3,6 +3,7 @@
 import { MemberAvatar } from "@/components/member-avatar";
 import { RuleMasterCollapsible } from "@/components/rule-master-collapsible";
 import { useSupabase } from "@/components/auth-provider";
+import { formatMbtiDisplay } from "@/lib/format-mbti";
 import { fetchMembers } from "@/lib/members-api";
 import { useQuery } from "@tanstack/react-query";
 
@@ -59,7 +60,7 @@ export function MembersClient() {
               </h2>
             </div>
             <span className="shrink-0 rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900">
-              {m.mbti}
+              {formatMbtiDisplay(m.mbti)}
             </span>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-amber-900/85">
