@@ -24,4 +24,8 @@ export type Game = {
   ratingCount: number;
   /** 현재 로그인 사용자가 매긴 별점(없으면 null) */
   myRating: number | null;
+  /** 현재 로그인 사용자가 «해 봤다»고 표시했는지 */
+  myPlayed: boolean;
+  /** «해 봤어요»를 표시한 회원 수 */
+  playedCount: number;
 };

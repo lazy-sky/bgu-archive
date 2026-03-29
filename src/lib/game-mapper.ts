@@ -56,5 +56,7 @@ export function mapDbGameToGame(row: DbGameRow): Game {
     ratingAvg: null,
     ratingCount: 0,
     myRating: null,
+    myPlayed: false,
+    playedCount: 0,
   };
 }

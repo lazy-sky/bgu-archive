@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth, useSupabase } from "@/components/auth-provider";
+import { patchGamesMyPlayed, setGamePlayed } from "@/lib/game-plays-api";
 import { fetchGames, getGameGenres } from "@/lib/games-api";
 import {
   canSaveLoreleiAvatar,
@@ -9,10 +10,12 @@ import {
 import { PLAY_STYLE_OPTIONS } from "@/lib/profile-picklists";
 import { fetchSupporters } from "@/lib/supporters-api";
 import { AvatarEditor } from "@/components/avatar-editor";
+import { PlayedToggle } from "@/components/played-toggle";
 import { avatarConfigForSave, DEFAULT_AVATAR } from "@/lib/avatar-config";
 import { normalizeMbti } from "@/lib/format-mbti";
 import { fetchProfile } from "@/lib/profile-api";
 import type { AvatarConfig } from "@/types/avatar";
+import type { Game } from "@/types/game";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -39,6 +42,7 @@ export function ProfileForm() {
     () => new Set(),
   );
   const [ruleGameFilter, setRuleGameFilter] = useState("");
+  const [playedGameFilter, setPlayedGameFilter] = useState("");
   const [savedBasic, setSavedBasic] = useState(false);
   const [savedGenres, setSavedGenres] = useState(false);
   const [savedPlayStyles, setSavedPlayStyles] = useState(false);
@@ -73,6 +77,12 @@ export function ProfileForm() {
   const myRatedGames = useMemo(() => {
     return games
       .filter((g) => g.myRating != null)
+      .sort((a, b) => a.name.localeCompare(b.name, "ko"));
+  }, [games]);
+
+  const myPlayedGames = useMemo(() => {
+    return games
+      .filter((g) => g.myPlayed)
       .sort((a, b) => a.name.localeCompare(b.name, "ko"));
   }, [games]);
 
@@ -196,6 +206,12 @@ export function ProfileForm() {
     return games.filter((g) => g.name.toLowerCase().includes(q));
   }, [games, ruleGameFilter]);
 
+  const filteredGamesForPlayed = useMemo(() => {
+    const q = playedGameFilter.trim().toLowerCase();
+    if (!q) return games;
+    return games.filter((g) => g.name.toLowerCase().includes(q));
+  }, [games, playedGameFilter]);
+
   const filteredGenres = useMemo(() => {
     const q = genreFilter.trim().toLowerCase();
     if (!q) return genreOptions;
@@ -293,6 +309,42 @@ export function ProfileForm() {
       queryClient.invalidateQueries({ queryKey: ["profile", userId] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
       setTimeout(() => setSavedRuleGames(false), 3000);
+    },
+  });
+
+  const playedMutation = useMutation({
+    mutationFn: async ({
+      gameId,
+      played,
+    }: {
+      gameId: string;
+      played: boolean;
+    }) => {
+      const { supabase, userId } = assertLoggedIn();
+      await setGamePlayed(supabase, userId, gameId, played);
+    },
+    onMutate: async ({ gameId, played }) => {
+      await queryClient.cancelQueries({ queryKey: ["games"] });
+      const snapshots = queryClient.getQueriesData<Game[]>({
+        queryKey: ["games"],
+      });
+      const previous = snapshots.map(([queryKey, data]) => ({
+        queryKey,
+        data,
+      }));
+      queryClient.setQueriesData<Game[]>(
+        { queryKey: ["games"] },
+        (old) => patchGamesMyPlayed(old, gameId, played),
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      context?.previous?.forEach(({ queryKey, data }) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["games"] });
     },
   });
 
@@ -531,6 +583,81 @@ export function ProfileForm() {
           </ul>
         )}
       </section>
+
+      <fieldset className="min-w-0">
+        <legend className={`${labelClass} px-0`}>해 본 게임</legend>
+        <p className="mt-1 text-xs text-amber-800/75">
+          플레이해 본 게임은 스위치로 표시합니다. 게임 목록과 동일한 기록이에요.
+        </p>
+        {gamesLoading ? (
+          <p className="mt-3 text-sm text-amber-900/70">불러오는 중…</p>
+        ) : games.length === 0 ? (
+          <p className="mt-3 text-sm text-amber-800/80">
+            등록된 게임이 없습니다.{" "}
+            <Link href="/games/new" className="font-medium text-amber-900 underline">
+              게임 추가
+            </Link>
+            후 표시할 수 있어요.
+          </p>
+        ) : (
+          <>
+            <input
+              type="search"
+              value={playedGameFilter}
+              onChange={(e) => setPlayedGameFilter(e.target.value)}
+              placeholder="게임 이름 검색…"
+              className={`${inputClass} mt-2`}
+              aria-label="해 본 게임 검색"
+            />
+            <div className="mt-2 max-h-72 overflow-y-auto rounded-lg border border-amber-900/15 bg-white/90 p-2">
+              <ul className="space-y-0.5" role="list">
+                {filteredGamesForPlayed.map((g) => (
+                  <li key={g.id}>
+                    <div
+                      className={[
+                        "flex items-center justify-between gap-3 rounded-lg px-2 py-2 text-sm text-amber-950 transition-colors",
+                        g.myPlayed
+                          ? "bg-emerald-50/50 ring-1 ring-emerald-600/15"
+                          : "hover:bg-amber-50/70",
+                      ].join(" ")}
+                    >
+                      <span className="min-w-0 flex-1 leading-snug">{g.name}</span>
+                      <PlayedToggle
+                        played={g.myPlayed}
+                        onToggle={(next) =>
+                          playedMutation.mutate({
+                            gameId: g.id,
+                            played: next,
+                          })
+                        }
+                        size="sm"
+                      />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              {filteredGamesForPlayed.length === 0 && (
+                <p className="px-2 py-3 text-center text-sm text-amber-800/70">
+                  검색 결과가 없습니다.
+                </p>
+              )}
+            </div>
+            <p className="mt-2 text-xs tabular-nums text-amber-900/55">
+              해 봄 {myPlayedGames.length}개
+              {playedGameFilter.trim()
+                ? ` · 표시 ${filteredGamesForPlayed.length}개`
+                : ""}
+            </p>
+            {playedMutation.isError ? (
+              <p className="mt-2 text-sm text-red-700" role="alert">
+                {playedMutation.error instanceof Error
+                  ? playedMutation.error.message
+                  : "저장에 실패했습니다."}
+              </p>
+            ) : null}
+          </>
+        )}
+      </fieldset>
 
       <fieldset className="min-w-0">
         <legend className={`${labelClass} px-0`}>선호 장르</legend>

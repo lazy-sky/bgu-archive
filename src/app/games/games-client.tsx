@@ -1,5 +1,6 @@
 "use client";
 
+import { PlayedToggle } from "@/components/played-toggle";
 import { Select } from "@/components/ui/select";
 import { RuleMasterCollapsible } from "@/components/rule-master-collapsible";
 import { useAuth, useSupabase } from "@/components/auth-provider";
@@ -7,6 +8,7 @@ import {
   deleteGameRating,
   upsertGameRating,
 } from "@/lib/game-ratings-api";
+import { patchGamesMyPlayed, setGamePlayed } from "@/lib/game-plays-api";
 import { fetchGames, getGameGenres } from "@/lib/games-api";
 import { fetchMembers } from "@/lib/members-api";
 import { formatPlayerRange } from "@/lib/format-players";
@@ -81,6 +83,34 @@ function GameRatingBlock({
   );
 }
 
+function PlayRecordToggle({
+  game,
+  userId,
+  onSetPlayed,
+}: {
+  game: Game;
+  userId: string | null;
+  onSetPlayed: (gameId: string, played: boolean) => void;
+}) {
+  if (!userId) {
+    return (
+      <p className="text-xs text-amber-800/55">
+        로그인하면 플레이 기록을 남길 수 있어요.
+      </p>
+    );
+  }
+  return (
+    <div className="rounded-xl border border-amber-900/10 bg-gradient-to-br from-white/90 to-amber-50/40 px-3 py-2.5 shadow-sm shadow-amber-900/[0.04]">
+      <PlayedToggle
+        played={game.myPlayed}
+        onToggle={(next) => onSetPlayed(game.id, next)}
+        size="md"
+        showLabel
+      />
+    </div>
+  );
+}
+
 const DIFFICULTY_LEVELS = [1, 2, 3, 4] as const;
 
 function filterGames(
@@ -147,10 +177,47 @@ export function GamesClient() {
     },
   });
 
+  const playedMutation = useMutation({
+    mutationFn: async ({
+      gameId,
+      played,
+    }: {
+      gameId: string;
+      played: boolean;
+    }) => {
+      if (!supabase || !session?.user.id) throw new Error("로그인이 필요합니다.");
+      await setGamePlayed(supabase, session.user.id, gameId, played);
+    },
+    onMutate: async ({ gameId, played }) => {
+      await queryClient.cancelQueries({ queryKey: ["games"] });
+      const snapshots = queryClient.getQueriesData<Game[]>({
+        queryKey: ["games"],
+      });
+      const previous = snapshots.map(([queryKey, data]) => ({
+        queryKey,
+        data,
+      }));
+      queryClient.setQueriesData<Game[]>(
+        { queryKey: ["games"] },
+        (old) => patchGamesMyPlayed(old, gameId, played),
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      context?.previous?.forEach(({ queryKey, data }) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+    },
+  });
+
   const ratingBusy =
     ratingMutation.isPending || clearRatingMutation.isPending;
   const ratingError =
     ratingMutation.error ?? clearRatingMutation.error;
+  const playedError = playedMutation.error;
 
   const { data: members = [], isPending: membersPending } = useQuery({
     queryKey: ["members"],
@@ -245,11 +312,12 @@ export function GamesClient() {
       </div>
 
       <div className="flex flex-col gap-4 rounded-xl border border-amber-900/10 bg-white/60 p-4 shadow-sm">
-        {ratingError ? (
+        {ratingError || playedError ? (
           <p className="text-sm text-red-700" role="alert">
-            {ratingError instanceof Error
-              ? ratingError.message
-              : "별점을 저장하지 못했습니다."}
+            {(() => {
+              const err = ratingError ?? playedError;
+              return err instanceof Error ? err.message : "저장하지 못했습니다.";
+            })()}
           </p>
         ) : null}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -305,6 +373,7 @@ export function GamesClient() {
               <option value="players_asc">인원수 적은 순</option>
               <option value="rating_desc">유저 평점 높은 순</option>
               <option value="rating_asc">유저 평점 낮은 순</option>
+              <option value="play_count_desc">많이 플레이된 순</option>
             </Select>
           </label>
         </div>
@@ -398,6 +467,13 @@ export function GamesClient() {
                   }
                   onClearRating={(id) => clearRatingMutation.mutate({ gameId: id })}
                 />
+                <PlayRecordToggle
+                  game={g}
+                  userId={session?.user.id ?? null}
+                  onSetPlayed={(id, played) =>
+                    playedMutation.mutate({ gameId: id, played })
+                  }
+                />
                 <div>
                   {g.beginnerFriendly ? (
                     <span className="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-900">
@@ -443,6 +519,7 @@ export function GamesClient() {
             <col className="w-10" />
             <col className="w-[16%]" />
             <col className="w-[8.5rem]" />
+            <col className="w-11" />
             <col className="w-[3.5rem]" />
             <col className="w-[9%]" />
             <col className="w-[6.75rem]" />
@@ -459,6 +536,12 @@ export function GamesClient() {
               <th className="px-2 py-2.5 font-medium">게임명</th>
               <th className="px-2 py-2.5 text-xs font-medium leading-tight">
                 유저 평점
+              </th>
+              <th
+                className="whitespace-nowrap px-1 py-2.5 text-center text-xs font-medium leading-tight"
+                title="이 게임 해 봤어요"
+              >
+                해 봄
               </th>
               <th className="whitespace-nowrap px-3 py-2.5 text-center font-medium">
                 난이도
@@ -514,6 +597,27 @@ export function GamesClient() {
                         clearRatingMutation.mutate({ gameId: id })
                       }
                     />
+                  </td>
+                  <td className="px-1 py-2 align-middle text-center">
+                    {session?.user.id ? (
+                      <div
+                        className="flex justify-center py-0.5"
+                        title="이 게임 해 봤어요"
+                      >
+                        <PlayedToggle
+                          played={g.myPlayed}
+                          onToggle={(next) =>
+                            playedMutation.mutate({
+                              gameId: g.id,
+                              played: next,
+                            })
+                          }
+                          size="sm"
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-amber-800/45">—</span>
+                    )}
                   </td>
                   <td className="px-2 py-2.5 text-center text-amber-900/90">
                     {g.difficulty ?? "—"}

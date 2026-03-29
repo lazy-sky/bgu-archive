@@ -7,7 +7,8 @@ export type GameSortMode =
   | "players_desc"
   | "players_asc"
   | "rating_desc"
-  | "rating_asc";
+  | "rating_asc"
+  | "play_count_desc";
 
 function toNum(v: number | string | null): number | null {
   if (v == null || v === "") return null;
@@ -93,6 +94,10 @@ export function sortGames(list: Game[], mode: GameSortMode): Game[] {
         const ka = a.ratingAvg ?? 999;
         const kb = b.ratingAvg ?? 999;
         c = ka - kb;
+        break;
+      }
+      case "play_count_desc": {
+        c = b.playedCount - a.playedCount;
         break;
       }
       default:

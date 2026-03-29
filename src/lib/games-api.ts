@@ -1,5 +1,6 @@
 import type { DbGameRow } from "@/lib/game-mapper";
 import { mapDbGameToGame } from "@/lib/game-mapper";
+import { mergeGamePlays } from "@/lib/game-plays-api";
 import { mergeGameRatings } from "@/lib/game-ratings-api";
 import type { Game } from "@/types/game";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -26,7 +27,8 @@ export async function fetchGames(
   const games = (data ?? []).map((row) =>
     mapDbGameToGame(row as DbGameRow),
   );
-  return mergeGameRatings(supabase, games, options?.viewerUserId);
+  const rated = await mergeGameRatings(supabase, games, options?.viewerUserId);
+  return mergeGamePlays(supabase, rated, options?.viewerUserId);
 }
 
 export async function fetchGameById(
@@ -43,7 +45,12 @@ export async function fetchGameById(
   if (error) throw error;
   if (!data) return null;
   const game = mapDbGameToGame(data as DbGameRow);
-  const [merged] = await mergeGameRatings(supabase, [game], options?.viewerUserId);
+  const [rated] = await mergeGameRatings(supabase, [game], options?.viewerUserId);
+  const [merged] = await mergeGamePlays(
+    supabase,
+    rated ? [rated] : [],
+    options?.viewerUserId,
+  );
   return merged ?? null;
 }
 
