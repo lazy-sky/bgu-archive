@@ -9,10 +9,12 @@ import {
 } from "@/lib/lorelei-eligibility";
 import { PLAY_STYLE_OPTIONS } from "@/lib/profile-picklists";
 import { fetchSupporters } from "@/lib/supporters-api";
+import { AchievementBadgeShowcase } from "@/components/achievement-badge-showcase";
 import { AvatarEditor } from "@/components/avatar-editor";
 import { PlayedToggle } from "@/components/played-toggle";
 import { avatarConfigForSave, DEFAULT_AVATAR } from "@/lib/avatar-config";
 import { normalizeMbti } from "@/lib/format-mbti";
+import { fetchAchievementBadgesByUser } from "@/lib/hall-of-fame-api";
 import { fetchProfile } from "@/lib/profile-api";
 import type { AvatarConfig } from "@/types/avatar";
 import type { Game } from "@/types/game";
@@ -95,6 +97,21 @@ export function ProfileForm() {
     enabled: !!supabase && !!session,
     staleTime: 60 * 1000,
   });
+
+  const { data: achievementBadgeMap } = useQuery({
+    queryKey: ["member-achievement-badges"],
+    queryFn: () => {
+      if (!supabase) throw new Error("데이터를 불러올 수 없습니다.");
+      return fetchAchievementBadgesByUser(supabase);
+    },
+    enabled: !!supabase && !!session,
+    staleTime: 30 * 1000,
+  });
+
+  const myAchievementBadges = useMemo(() => {
+    if (!userId || !achievementBadgeMap) return [];
+    return achievementBadgeMap.get(userId) ?? [];
+  }, [userId, achievementBadgeMap]);
 
   const orphanedRuleNames = useMemo(() => {
     if (!profile) return [];
@@ -534,6 +551,14 @@ export function ProfileForm() {
         saveAvatarError={saveAvatarMutation.error}
         saveAvatarSuccess={avatarSaved}
       />
+
+      {myAchievementBadges.length > 0 ? (
+        <AchievementBadgeShowcase
+          badges={myAchievementBadges}
+          variant="profile"
+          showHallLink
+        />
+      ) : null}
 
       <section
         className="space-y-3 rounded-xl border border-amber-900/10 bg-amber-50/40 p-4"

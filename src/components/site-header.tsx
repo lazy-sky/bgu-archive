@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth, useSupabase } from "@/components/auth-provider";
+import { HallOfFameAdminLink } from "@/app/honors/hall-of-fame-client";
 import { fetchProfile } from "@/lib/profile-api";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -13,6 +14,7 @@ const links = [
   { href: "/games/recommend", label: "게임 추천" },
   { href: "/members", label: "회원" },
   { href: "/members/ranking", label: "랭킹" },
+  { href: "/honors", label: "명예의 전당" },
   { href: "/donate", label: "후원" },
 ] as const;
 
@@ -144,6 +146,7 @@ export function SiteHeader() {
                   {l.label}
                 </Link>
               ))}
+            <HallOfFameAdminLink />
           </nav>
           <div className="h-4 w-px shrink-0 bg-amber-950/15" aria-hidden />
           <div className="shrink-0 text-sm text-amber-950">
@@ -260,6 +263,9 @@ export function SiteHeader() {
                         {l.label}
                       </Link>
                     ))}
+                  <div className="px-1 py-2.5" onClick={() => setMenuOpen(false)}>
+                    <HallOfFameAdminLink />
+                  </div>
                 </nav>
 
                 <div className="mt-4 border-t border-amber-950/10 pt-4">

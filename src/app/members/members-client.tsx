@@ -1,11 +1,14 @@
 "use client";
 
+import { AchievementBadgeShowcase } from "@/components/achievement-badge-showcase";
 import { MemberAvatar } from "@/components/member-avatar";
 import { RuleMasterCollapsible } from "@/components/rule-master-collapsible";
 import { useSupabase } from "@/components/auth-provider";
+import { fetchAchievementBadgesByUser } from "@/lib/hall-of-fame-api";
 import { formatMbtiDisplay } from "@/lib/format-mbti";
 import { fetchMembers } from "@/lib/members-api";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 export function MembersClient() {
   const supabase = useSupabase();
@@ -19,6 +22,23 @@ export function MembersClient() {
     enabled: !!supabase,
     staleTime: 30 * 1000,
   });
+
+  const { data: badgeMap } = useQuery({
+    queryKey: ["member-achievement-badges"],
+    queryFn: () => {
+      if (!supabase) throw new Error("데이터를 불러올 수 없습니다.");
+      return fetchAchievementBadgesByUser(supabase);
+    },
+    enabled: !!supabase,
+    staleTime: 30 * 1000,
+  });
+
+  const membersWithBadges = useMemo(() => {
+    return members.map((m) => ({
+      ...m,
+      achievementBadges: badgeMap?.get(m.id) ?? [],
+    }));
+  }, [members, badgeMap]);
 
   if (!supabase) {
     return (
@@ -42,7 +62,7 @@ export function MembersClient() {
 
   return (
     <ul className="grid gap-4 sm:grid-cols-2">
-      {members.map((m) => (
+      {membersWithBadges.map((m) => (
         <li
           key={m.id}
           className="min-w-0 rounded-xl border border-amber-900/10 bg-white/80 p-4 shadow-sm sm:p-5"
@@ -63,6 +83,10 @@ export function MembersClient() {
               {formatMbtiDisplay(m.mbti)}
             </span>
           </div>
+          <AchievementBadgeShowcase
+            badges={m.achievementBadges}
+            variant="card"
+          />
           <p className="mt-2 text-sm leading-relaxed text-amber-900/85">
             {m.bio}
           </p>
