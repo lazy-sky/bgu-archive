@@ -12,6 +12,7 @@ const links = [
   { href: "/", label: "홈" },
   { href: "/games", label: "게임 목록" },
   { href: "/games/recommend", label: "게임 추천" },
+  { href: "/learn", label: "학습" },
   { href: "/members", label: "회원" },
   { href: "/members/ranking", label: "랭킹" },
   { href: "/honors", label: "명예의 전당" },
